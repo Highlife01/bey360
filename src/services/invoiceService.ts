@@ -15,6 +15,7 @@ export interface InvoiceRecord {
   dueDate: string;
   status: 'Beklemede' | 'Onaylandı' | 'Reddedildi' | 'Ödendi';
   note?: string;
+  currency?: string;
   createdAt?: unknown;
 }
 
