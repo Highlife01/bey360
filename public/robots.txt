@@ -1,24 +1,29 @@
 User-agent: *
 Allow: /
-Disallow: /login
-Disallow: /signup
-Disallow: /giris
-Disallow: /kayit-ol
+Allow: /ozellikler
+Allow: /fiyatlar
+Allow: /hakkimizda
+Allow: /iletisim
+Allow: /blog
+Allow: /blog/
+Allow: /login
+Allow: /signup
+
+# Panel ve Hassas Alanlar
 Disallow: /panel
+Disallow: /panel/
 Disallow: /admin
+Disallow: /admin/
 Disallow: /cariler
 Disallow: /faturalar
-Disallow: /e-fatura
-Disallow: /stok
-Disallow: /stok-hareket
 Disallow: /kasa-banka
+Disallow: /stok
 Disallow: /gelir-gider
 Disallow: /raporlar
-Disallow: /bildirimler
 Disallow: /ayarlar
-Disallow: /muhasebeci
-Disallow: /api
-Disallow: /odeme
-Disallow: /hesabim
+Disallow: /bildirimler
+Disallow: /profil
+Disallow: /e-fatura
 
-Sitemap: https://bey360.com.tr/sitemap.xml
+# Sitemap
+Sitemap: https://www.bey360.com.tr/sitemap.xml

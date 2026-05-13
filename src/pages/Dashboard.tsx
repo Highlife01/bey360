@@ -15,6 +15,7 @@ import {
   FileText,
   Gauge,
   Lightbulb,
+  Mail,
   PackageCheck,
   Plus,
   Radar,
@@ -244,7 +245,17 @@ export default function Dashboard({ user }: DashboardProps) {
     setLoading(true);
     setError('');
     try {
-      const [nextStats, nextInsights, nextInvoices, nextCashBank, nextFinance, nextStock, nextCustomers, nextNotifications] =
+      const [
+        nextStats,
+        nextInsights,
+        nextInvoices,
+        nextCashBank,
+        nextFinance,
+        nextStock,
+        nextCustomers,
+        nextNotifications,
+        nextMessages,
+      ] =
         await Promise.all([
           getDashboardStats(user.uid),
           getBusinessInsights(user.uid),
