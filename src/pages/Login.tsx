@@ -74,7 +74,10 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <img src="/logos/logo_branding.png" alt="Bey360" className="h-24 mb-12" />
+            <div className="mb-12">
+              <img src="/logos/logo_branding.png" alt="Bey360" className="h-20 mb-2" />
+              <p className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.2em] ml-2">Gelişmiş Çözümler, Tek Platform</p>
+            </div>
             <h1 className="text-6xl font-black text-white leading-tight mb-8">
               Yeni Nesil <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">Ön Muhasebe</span>

@@ -8,7 +8,7 @@ const slides = [
     id: 1,
     image: '/images/hero1.png',
     title: 'Finansal Gücünü Keşfet',
-    subtitle: 'Bey360 ile tüm gelir ve giderlerini tek panelden, 360 derece kontrol et.',
+    subtitle: 'Gelişmiş Çözümler, Tek Platform. Bey360 ile tüm gelir ve giderlerini tek panelden, 360 derece kontrol et.',
     badge: 'AKILLI MUHASEBE',
   },
   {

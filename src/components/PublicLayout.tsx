@@ -13,8 +13,9 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
       <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100">
         <div className="flex items-center justify-between h-20 px-6 max-w-7xl mx-auto">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex flex-col items-center md:items-start group">
             <img src="/logos/logo_branding.png" alt="Bey360 Logo" className="h-12 w-auto group-hover:scale-105 transition-transform" />
+            <span className="hidden md:block text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 -mt-1 ml-1 group-hover:text-indigo-600 transition-colors">Gelişmiş Çözümler, Tek Platform</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500">
             <Link to="/ozellikler" className={`hover:text-slate-900 ${location.pathname === '/ozellikler' ? 'text-indigo-600' : ''}`}>Özellikler</Link>
@@ -41,9 +42,12 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
 
       <footer className="border-t border-slate-100 py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black">B</div>
-            <span className="font-black">Bey360</span>
+          <div className="flex flex-col items-center md:items-start gap-2">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black">B</div>
+              <span className="font-black">Bey360</span>
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Gelişmiş Çözümler, Tek Platform</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8 text-xs font-black text-slate-400 uppercase tracking-widest">
             <Link to="/hakkimizda" className="hover:text-indigo-600">Hakkımızda</Link>

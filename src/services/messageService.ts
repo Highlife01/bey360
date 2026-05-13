@@ -35,12 +35,12 @@ function validateContactMessage(message: ContactMessageInput) {
     throw new Error('Lütfen geçerli bir e-posta adresi girin.');
   }
 
-  if (message.phone.length < 7) {
+  if (message.phone.length < 1) {
     throw new Error('Lütfen geçerli bir telefon numarası girin.');
   }
 
-  if (message.message.length < 10) {
-    throw new Error('Mesajınız en az 10 karakter olmalı.');
+  if (message.message.length < 1) {
+    throw new Error('Lütfen mesajınızı yazın.');
   }
 }
 

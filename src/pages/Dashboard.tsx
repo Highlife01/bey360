@@ -30,6 +30,8 @@ import {
   Zap,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { isSuperAdmin } from '../config/admins';
+import { getContactMessages, ContactMessage } from '../services/messageService';
 import { CashBankRecord, getCashBankRecords } from '../services/cashBankService';
 import { CustomerRecord, getCustomers } from '../services/customerService';
 import { getDashboardStats } from '../services/dashboardService';
@@ -127,49 +129,6 @@ const severityStyles: Record<
   },
 };
 
-const kpiCards: Array<{
-  label: string;
-  stat: keyof DashboardStats;
-  sub: string;
-  route: string;
-  icon: typeof TrendingUp;
-  tone: string;
-  line: string;
-}> = [
-  {
-    label: 'Günlük Satış',
-    stat: 'dailySales',
-    sub: 'Satış Kanalı',
-    route: '/faturalar',
-    icon: TrendingUp,
-    tone: 'border-cyan-300/20 bg-cyan-300/5 text-cyan-100',
-    line: 'from-cyan-300 to-sky-300',
-  },
-  {
-    label: 'Kasa Bakiyesi',
-    stat: 'cashBalance',
-    sub: 'Likidite',
-    route: '/kasa-banka',
-    icon: Wallet,
-    tone: 'border-emerald-300/20 bg-emerald-300/5 text-emerald-100',
-    line: 'from-emerald-300 to-lime-300',
-  },
-  {
-    label: 'Stok Alarmı',
-    stat: 'stockAlerts',
-    sub: 'Operasyon',
-    route: '/stok',
-    icon: Boxes,
-    tone: 'border-amber-300/20 bg-amber-300/5 text-amber-100',
-    line: 'from-amber-200 to-orange-300',
-  },
-  {
-    label: 'Bekleyen Ödeme',
-    stat: 'upcomingPayments',
-    sub: 'Vade',
-    route: '/faturalar',
-    icon: AlertCircle,
-    tone: 'border-rose-300/20 bg-rose-300/5 text-rose-100',
     line: 'from-rose-300 to-pink-300',
   },
 ];
@@ -279,6 +238,7 @@ export default function Dashboard({ user }: DashboardProps) {
   const [stock, setStock] = useState<StockRecord[]>([]);
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [notifications, setNotifications] = useState<NotificationRecord[]>([]);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -297,6 +257,7 @@ export default function Dashboard({ user }: DashboardProps) {
           getStockItems(user.uid),
           getCustomers(user.uid),
           getNotifications(user.uid),
+          isSuperAdmin(user) ? getContactMessages() : Promise.resolve([]),
         ]);
 
       setStats(nextStats);
@@ -307,6 +268,7 @@ export default function Dashboard({ user }: DashboardProps) {
       setStock(nextStock);
       setCustomers(nextCustomers);
       setNotifications(nextNotifications);
+      setMessages(nextMessages);
     } catch (loadError) {
       console.error(loadError);
       setError('Dashboard verileri alınamadı. Firebase izinlerini ve bağlantıyı kontrol edin.');
@@ -567,9 +529,15 @@ export default function Dashboard({ user }: DashboardProps) {
           <div className="min-h-[360px] rounded-lg border border-cyan-300/15 bg-slate-950/65 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] md:p-7">
             <div className="flex flex-wrap items-start justify-between gap-5">
               <div>
-                <div className="mb-4 inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100">
-                  <Signal size={14} />
-                  Bey360 Command Deck
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="inline-flex items-center gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-100">
+                    <Signal size={14} />
+                    Bey360 Command Deck
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <img src="/logos/logo_branding.png" alt="Bey360 Logo" className="h-10 w-auto" />
+                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500">Gelişmiş Çözümler, Tek Platform</span>
+                  </div>
                 </div>
                 <h2 className="max-w-3xl text-3xl font-black leading-tight text-white md:text-5xl">
                   {user?.email?.split('@')[0] || 'Operatör'}, bütün paneller aktif.
@@ -613,7 +581,53 @@ export default function Dashboard({ user }: DashboardProps) {
             </div>
 
             <div className="mt-6 grid gap-3 md:grid-cols-4">
-              {kpiCards.map((card) => (
+              {[
+                {
+                  label: 'Günlük Satış',
+                  statValue: stats.dailySales,
+                  sub: 'Satış Kanalı',
+                  route: '/faturalar',
+                  icon: TrendingUp,
+                  tone: 'border-cyan-300/20 bg-cyan-300/5 text-cyan-100',
+                  line: 'from-cyan-300 to-sky-300',
+                },
+                {
+                  label: 'Kasa Bakiyesi',
+                  statValue: stats.cashBalance,
+                  sub: 'Likidite',
+                  route: '/kasa-banka',
+                  icon: Wallet,
+                  tone: 'border-emerald-300/20 bg-emerald-300/5 text-emerald-100',
+                  line: 'from-emerald-300 to-lime-300',
+                },
+                {
+                  label: 'Stok Alarmı',
+                  statValue: stats.stockAlerts,
+                  sub: 'Operasyon',
+                  route: '/stok',
+                  icon: Boxes,
+                  tone: 'border-amber-300/20 bg-amber-300/5 text-amber-100',
+                  line: 'from-amber-200 to-orange-300',
+                },
+                {
+                  label: 'Bekleyen Ödeme',
+                  statValue: stats.upcomingPayments,
+                  sub: 'Vade',
+                  route: '/faturalar',
+                  icon: AlertCircle,
+                  tone: 'border-rose-300/20 bg-rose-300/5 text-rose-100',
+                  line: 'from-rose-300 to-pink-300',
+                },
+                ...(isSuperAdmin(user) ? [{
+                  label: 'Yeni Mesajlar',
+                  statValue: messages.length.toString(),
+                  sub: 'Sistem',
+                  route: '/admin',
+                  icon: Mail,
+                  tone: 'border-fuchsia-300/20 bg-fuchsia-300/5 text-fuchsia-100',
+                  line: 'from-fuchsia-300 to-purple-300',
+                }] : []),
+              ].map((card) => (
                 <Link key={card.label} to={card.route} className={`relative min-h-32 overflow-hidden rounded-lg border p-4 transition hover:-translate-y-0.5 ${card.tone}`}>
                   <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${card.line}`} />
                   <div className="flex items-start justify-between gap-3">
@@ -623,7 +637,7 @@ export default function Dashboard({ user }: DashboardProps) {
                     </div>
                     <card.icon size={22} />
                   </div>
-                  <p className="mt-5 break-words text-2xl font-black leading-none text-white">{stats[card.stat]}</p>
+                  <p className="mt-5 break-words text-2xl font-black leading-none text-white">{card.statValue}</p>
                 </Link>
               ))}
             </div>
