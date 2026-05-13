@@ -31,13 +31,20 @@ export const defaultDashboardStats: DashboardStats = {
   monthlyProfitLoss: '₺0',
 };
 
-export async function ensureUserDashboard(uid: string, email: string) {
+export async function ensureUserDashboard(
+  uid: string,
+  email: string,
+  profileData?: { displayName?: string; phone?: string; companyName?: string }
+) {
   const userDocRef = doc(db, 'users', uid);
   const snapshot = await getDoc(userDocRef);
 
   if (!snapshot.exists()) {
     await setDoc(userDocRef, {
       email,
+      displayName: profileData?.displayName || '',
+      phone: profileData?.phone || '',
+      companyName: profileData?.companyName || '',
       createdAt: serverTimestamp(),
       dashboard: defaultDashboardStats,
     });
@@ -57,4 +64,18 @@ export async function getUserDashboard(uid: string) {
 
   const data = snapshot.data();
   return (data.dashboard || defaultDashboardStats) as DashboardStats;
+}
+
+export async function updateUserProfile(
+  uid: string,
+  updates: { displayName?: string; phone?: string; companyName?: string; email?: string }
+) {
+  const userDocRef = doc(db, 'users', uid);
+  await setDoc(userDocRef, updates, { merge: true });
+}
+
+export async function getUserProfile(uid: string) {
+  const userDocRef = doc(db, 'users', uid);
+  const snapshot = await getDoc(userDocRef);
+  return snapshot.data();
 }

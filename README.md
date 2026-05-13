@@ -100,6 +100,25 @@ users/{uid}/companies
 
 ## Yapılan Büyük Geliştirmeler
 
+### Son Güncellemeler - 13 Mayıs 2026
+
+Canlıya alınan son eklemeler:
+
+- Ana sayfa ve footer alanına `@beyogluteknoloji` Instagram hesabı eklendi.
+- Organization schema içindeki sosyal profil listesine Beyoğlu Teknoloji web sitesi ve Instagram hesabı eklendi.
+- Dashboard modül durumları sıfır veri varken artık `Eksik` yerine `Hazır` mantığıyla gösterilir.
+- Fatura formu genişletildi: KDV oranı, KDV tutarı, genel toplam, düzenleme tarihi, açıklama ve `Ödendi` durumu desteklenir.
+- `InvoiceRecord` veri modeliyle fatura ekranı uyumlu hale getirildi.
+- Vite build uyarıları giderildi; Firebase, XLSX ve diğer büyük paketler `manualChunks` ile ayrıldı.
+- Son production build uyarısız tamamlandı ve Firebase Hosting'e deploy edildi.
+
+Sosyal bağlantılar:
+
+```txt
+Instagram: https://www.instagram.com/beyogluteknoloji/
+Web: https://www.beyogluteknoloji.com
+```
+
 ### Komuta Merkezi Dashboard
 
 `src/pages/Dashboard.tsx` tamamen yenilendi.
@@ -111,6 +130,9 @@ Eklenenler:
 - 30 / 60 / 90 günlük nakit akışı tahmini
 - Risk radar ekranı
 - Operasyon telemetri barları
+- Canlı modül çalışma durumu
+- Sıfır veri durumunda yönlendirici `Hazır` etiketleri
+- Bekleyen tahsilat, düşük stok ve son hareket panelleri
 - Riskler, öneriler ve anomaliler panelleri
 - Hızlı aksiyonlar
 
@@ -223,6 +245,7 @@ Eklenen teknik SEO özellikleri:
 - FAQPage schema
 - BreadcrumbList schema
 - SoftwareApplication / Product / Article schema
+- Sosyal profil bağlantıları
 
 Panel ve auth sayfaları `noindex` yapılır. SEO landing sayfaları indexlenebilir şekilde ayarlanır.
 
@@ -297,10 +320,22 @@ Eklenenler:
 - Swagger ve entegrasyon dokümanı bağlantıları
 - Backend proxy bağlantı testi
 - Token ve güvenlik bilgilendirmesi
+- e-Fatura/e-Arşiv senaryo ve tip alanları
+- Özel matrah girişi
+- KDV istisna kodu ve GİB durum kodu alanları
+- e-Arşiv teslim tipi ve alıcı e-posta alanları
+- Excel dışa aktarma
 
 Önemli güvenlik notu:
 
 `SecretKey`, `ApiKey`, kullanıcı adı ve şifre React/Vite frontend koduna yazılmamalıdır. Bu bilgiler sadece backend veya güvenli sunucu ortamında saklanmalıdır.
+
+Token mimarisi:
+
+- Her firma/mükellef entegrasyonu kendi Hızlı Teknoloji oturumu ve token kaydıyla yönetilmelidir.
+- Tek global token ile tüm firmaları yürütmek doğru değildir; firma ayrımı, yetki, loglama, iptal ve güvenlik açısından risklidir.
+- Hızlı Teknoloji ile netleştirilecek konu: ERP iş ortağı yapısında her mükellef için ayrı şifrelenmiş kullanıcı bilgisi ve token akışı nasıl yönetilecek?
+- Token süresi dokümana göre 3 gündür; backend token süresini takip etmeli, süresi dolunca ilgili firma için yeniden login yapmalıdır.
 
 Frontend yalnızca proxy çağırır:
 
@@ -319,6 +354,36 @@ Detay:
 ```txt
 docs/hizli-teknoloji-entegrasyon.md
 ```
+
+### Muhasebeci Paneli
+
+`src/pages/Accountant.tsx` operasyon paneli haline getirildi.
+
+Eklenenler:
+
+- Firma ve dönem seçimi
+- Dönem kapanış skoru
+- KDV tahmini
+- Eksik evrak ve kapanış kontrol listesi
+- Müşteri/firma operasyon özeti
+- Son faturalar
+- Excel dışa aktarma
+- Bey360 koyu panel tasarımıyla uyumlu arayüz
+
+### e-Fatura / e-Arşiv Modülü
+
+`src/pages/EInvoice.tsx` ve `src/services/eInvoiceService.ts` genişletildi.
+
+Eklenenler:
+
+- `TEMELFATURA`, `TICARIFATURA`, `EARSIVFATURA` senaryoları
+- Satış, iade, istisna ve özel matrah fatura tipleri
+- Özel matrah tutarı ve açıklaması
+- KDV istisna kodu
+- GİB durum kodu takibi
+- Alıcı vergi/TCKN, vergi dairesi, e-posta ve adres alanları
+- e-Arşiv teslim tipi
+- Hazırlık, gönderim ve durum takibi için daha zengin kayıt modeli
 
 ## Ortam Değişkenleri
 
@@ -356,8 +421,7 @@ Dikkat edilmesi gerekenler:
 
 ## Bilinen Teknik Borçlar
 
-- Bundle boyutu büyük. Build çıktısı Vite tarafından 500 kB üzeri chunk uyarısı veriyor.
-- Route bazlı lazy loading yapılmalı.
+- Route bazlı lazy loading ileride eklenirse ilk yükleme daha da küçültülebilir.
 - SEO için Vite SPA yerine uzun vadede Next.js SSR/SSG daha iyi olur.
 - Hızlı Teknoloji entegrasyonu için backend proxy henüz gerçek olarak kurulmadı.
 - Firebase config `.env` yapısına taşınmalı.
@@ -369,10 +433,11 @@ Dikkat edilmesi gerekenler:
 1. `bey360.com.tr` domainini Firebase Hosting’e bağla.
 2. Google Search Console’a `https://bey360.com.tr/sitemap.xml` gönder.
 3. Hızlı Teknoloji backend proxy endpointlerini kur.
-4. Firestore security rules ve admin custom claims yapısını güçlendir.
-5. Route bazlı lazy loading ile bundle boyutunu küçült.
-6. SEO içeriklerini blog ve sektör sayfalarıyla genişlet.
-7. Ödeme linki / QR tahsilat modülünü ekle.
+4. Hızlı Teknoloji ile firma/mükellef bazlı token akışını netleştir.
+5. Firestore security rules ve admin custom claims yapısını güçlendir.
+6. Route bazlı lazy loading ile ilk yükleme süresini daha da iyileştir.
+7. SEO içeriklerini blog ve sektör sayfalarıyla genişlet.
+8. Ödeme linki / QR tahsilat modülünü ekle.
 
 ## Faydalı Komutlar
 

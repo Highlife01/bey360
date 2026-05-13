@@ -44,11 +44,23 @@ const navItems = [
   { id: 'ayarlar', path: '/ayarlar', label: 'Ayarlar', icon: SettingsIcon },
 ];
 
+import { getUserProfile } from '../services/userService';
+
 export default function AppLayout({ user, onSignOut, children }: AppLayoutProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [profile, setProfile] = useState<any>(null);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const data = await getUserProfile(user.uid);
+      setProfile(data);
+    };
+    loadProfile();
+  }, [user]);
+
   const superAdmin = isSuperAdmin(user);
   const visibleNav = superAdmin
     ? [
@@ -226,13 +238,13 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
                 <div className="hidden h-10 w-px bg-white/10 sm:block" />
                 <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2">
                   <div className="hidden text-right sm:block">
-                    <p className="text-sm font-black text-white">{user.email?.split('@')[0]}</p>
+                    <p className="text-sm font-black text-white">{profile?.displayName || user.email?.split('@')[0]}</p>
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
-                      Operatör
+                      {profile?.companyName || 'Bey360 Operatör'}
                     </p>
                   </div>
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-cyan-300/25 bg-cyan-300/10 text-sm font-black text-cyan-100">
-                    {user.email?.[0].toUpperCase()}
+                    {(profile?.displayName?.[0] || user.email?.[0] || 'B').toUpperCase()}
                   </div>
                 </div>
               </div>

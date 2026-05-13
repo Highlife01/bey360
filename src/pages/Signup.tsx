@@ -8,6 +8,9 @@ import { ensureUserDashboard } from '../services/userService';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +22,11 @@ export default function Signup() {
     setLoading(true);
     try {
       const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
-      await ensureUserDashboard(credential.user.uid, credential.user.email ?? '');
+      await ensureUserDashboard(credential.user.uid, credential.user.email ?? '', {
+        displayName,
+        phone,
+        companyName,
+      });
       navigate('/');
     } catch {
       setError('Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.');
@@ -96,39 +103,6 @@ export default function Signup() {
           <div className="h-px flex-1 bg-slate-100" />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="text-left">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">
-              E-posta
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold"
-              placeholder="adiniz@sirket.com"
-            />
-          </div>
-          <div className="text-left">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 block">
-              Şifre
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold"
-              placeholder="••••••••"
-            />
-          </div>
-
-          {error && <p className="text-rose-500 text-sm font-bold">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
             className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60"
           >
             {loading ? 'HESAP OLUŞTURULUYOR...' : 'HESAP OLUŞTUR'}

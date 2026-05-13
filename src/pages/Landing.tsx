@@ -246,17 +246,24 @@ function ContactForm() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     try {
       const { submitContactMessage } = await import('../services/messageService');
       await submitContactMessage(formData);
       setSuccess(true);
       setFormData({ name: '', email: '', phone: '', message: '' });
     } catch (err) {
-      alert('Mesaj gönderilemedi, lütfen tekrar deneyin.');
+      const errorMessage = err instanceof Error ? err.message : '';
+      setError(
+        errorMessage && !errorMessage.toLowerCase().includes('permission')
+          ? errorMessage
+          : 'Mesaj şu anda kaydedilemedi. Lütfen WhatsApp veya telefon üzerinden bize ulaşın.'
+      );
     } finally {
       setLoading(false);
     }
@@ -283,6 +290,14 @@ function ContactForm() {
       </div>
       <input type="tel" placeholder="Telefon" required value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 focus:bg-white/10 focus:border-indigo-500 outline-none transition font-bold" />
       <textarea placeholder="Mesajınız" required rows={4} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 focus:bg-white/10 focus:border-indigo-500 outline-none transition font-bold resize-none" />
+      {error && (
+        <div className="rounded-2xl border border-rose-300/20 bg-rose-500/10 px-5 py-4 text-sm font-bold leading-6 text-rose-100">
+          {error}{' '}
+          <a href="https://wa.me/905375127810" target="_blank" rel="noopener noreferrer" className="underline decoration-rose-200/50 underline-offset-4">
+            WhatsApp ile yazın.
+          </a>
+        </div>
+      )}
       <button type="submit" disabled={loading} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-2xl hover:bg-indigo-700 transition-all hover:scale-[1.02] disabled:opacity-50">{loading ? 'GÖNDERİLİYOR...' : 'MESAJ GÖNDER'}</button>
     </form>
   );
