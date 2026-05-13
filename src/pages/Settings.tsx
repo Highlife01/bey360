@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { addCompany, CompanyRecord, getCompanies } from '../services/companyService';
 import { getUserProfile, updateUserProfile } from '../services/userService';
-import { User as UserIcon, Building2, Save, CheckCircle2, Plus } from 'lucide-react';
+import { User as UserIcon, Building2, Save, CheckCircle2, Plus, History } from 'lucide-react';
+import { getRecentLogs, AuditLog } from '../services/logService';
 
 interface SettingsProps {
   user: User | null;
@@ -28,16 +29,19 @@ export default function Settings({ user }: SettingsProps) {
     logoUrl: '',
   });
   const [activeCompany, setActiveCompany] = useState<string>(() => localStorage.getItem('bey360_active_company') || '');
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
     const load = async () => {
       if (!user) return;
-      const [companyRows, userProfile] = await Promise.all([
+      const [companyRows, userProfile, auditLogs] = await Promise.all([
         getCompanies(user.uid),
-        getUserProfile(user.uid)
+        getUserProfile(user.uid),
+        getRecentLogs(user.uid)
       ]);
       setCompanies(companyRows);
+      setLogs(auditLogs);
       if (userProfile) {
         setProfile({
           displayName: userProfile.displayName || '',
@@ -205,7 +209,7 @@ export default function Settings({ user }: SettingsProps) {
             <div className={`list-item border-cyan-300/30 bg-cyan-300/5`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-white font-black">{profile.companyName}</h4>
+                  <h4 className="text-[var(--text-main)] font-black">{profile.companyName}</h4>
                   <p className="text-[10px] uppercase tracking-widest text-cyan-200">Ana Firma Profili</p>
                 </div>
                 <span className="badge">Aktif</span>
@@ -213,7 +217,7 @@ export default function Settings({ user }: SettingsProps) {
             </div>
             
             {companies.length === 0 ? (
-              <div className="p-10 text-center border border-dashed border-white/10 rounded-xl text-slate-500 text-xs font-bold">
+              <div className="p-10 text-center border border-dashed border-[var(--border-color)] rounded-xl text-slate-500 text-xs font-bold">
                 Henüz ek şube veya firma eklenmemiş.
               </div>
             ) : (
@@ -225,7 +229,7 @@ export default function Settings({ user }: SettingsProps) {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-white font-black">{company.name}</h4>
+                      <h4 className="text-[var(--text-main)] font-black">{company.name}</h4>
                       <div className="flex gap-3 text-[10px] text-slate-400 mt-1">
                         <span>VKN: {company.taxId}</span>
                         <span>{company.taxOffice}</span>
@@ -236,6 +240,70 @@ export default function Settings({ user }: SettingsProps) {
                 </article>
               ))
             )}
+          </div>
+        </section>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2 mt-6">
+        <section className="card">
+          <div className="flex items-center gap-3 mb-6">
+            <History className="text-cyan-300" />
+            <h3 className="mb-0">İşlem Geçmişi (Audit Logs)</h3>
+          </div>
+          <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
+            <table className="text-xs">
+              <thead>
+                <tr>
+                  <th>Tarih</th>
+                  <th>Modül</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="text-center py-6 text-slate-500">Henüz kayıt bulunamadı.</td>
+                  </tr>
+                ) : (
+                  logs.map(log => (
+                    <tr key={log.id}>
+                      <td className="whitespace-nowrap">{log.createdAt?.toDate()?.toLocaleString() || 'Şimdi'}</td>
+                      <td><span className="badge">{log.module}</span></td>
+                      <td className="font-bold text-[var(--text-main)]">{log.action}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="card border-indigo-400/20 bg-indigo-400/5">
+          <div className="flex items-center gap-3 mb-6">
+            <ShieldCheck className="text-indigo-400" />
+            <h3 className="mb-0 text-indigo-400">e-Fatura Entegrasyonu</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl border border-indigo-400/20 bg-white/5">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-black uppercase tracking-widest text-slate-400">Durum</span>
+                <span className="badge badge-warning">Hazırlık Aşamasında</span>
+              </div>
+              <p className="text-sm font-medium text-slate-300 leading-relaxed">
+                Bey360 UBL altyapısı hazır. GİB entegrasyonu için aktivasyon bekleniyor.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg border border-white/5 bg-white/5 text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Entegratör</p>
+                <p className="text-xs font-bold">Logo / EDM</p>
+              </div>
+              <div className="p-3 rounded-lg border border-white/5 bg-white/5 text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Lisans</p>
+                <p className="text-xs font-bold text-indigo-400">SaaS Premium</p>
+              </div>
+            </div>
+            <button className="button-primary w-full opacity-50 cursor-not-allowed">Hemen Aktif Et (Yakında)</button>
           </div>
         </section>
       </div>

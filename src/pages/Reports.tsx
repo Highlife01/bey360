@@ -5,6 +5,7 @@ import { getFinanceRecords } from '../services/financeService';
 import { getCashBankRecords } from '../services/cashBankService';
 import { getStockItems } from '../services/stockService';
 import { exportToExcel } from '../services/excelService';
+import DashboardCharts from '../components/DashboardCharts';
 
 interface ReportsProps {
   user: User | null;
@@ -40,6 +41,8 @@ const formatCurrency = (value: number) => `₺${value.toLocaleString('tr-TR')}`;
 
 export default function Reports({ user }: ReportsProps) {
   const [summary, setSummary] = useState<ReportSummary>(emptySummary);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [finance, setFinance] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [rangeStart, setRangeStart] = useState('');
   const [rangeEnd, setRangeEnd] = useState('');
@@ -47,12 +50,15 @@ export default function Reports({ user }: ReportsProps) {
   const fetchSummary = async () => {
     if (!user) return;
     setLoading(true);
-    const [invoices, finance, cashBank, stocks] = await Promise.all([
+    const [invList, finList, cashBank, stocks] = await Promise.all([
       getInvoices(user.uid),
       getFinanceRecords(user.uid),
       getCashBankRecords(user.uid),
       getStockItems(user.uid),
     ]);
+
+    setInvoices(invList);
+    setFinance(finList);
 
     const inRange = (date: string) => {
       if (!date) return false;
@@ -61,19 +67,19 @@ export default function Reports({ user }: ReportsProps) {
       return true;
     };
 
-    const totalSales = invoices
+    const totalSales = invList
       .filter((inv) => (inv.invoiceType === 'Satış' || inv.invoiceType === 'Hizmet') && (!rangeStart || inRange(inv.dueDate)))
       .reduce((sum, inv) => sum + (inv.grandTotal || 0), 0);
 
-    const totalPurchases = invoices
+    const totalPurchases = invList
       .filter((inv) => inv.invoiceType === 'Alış' && (!rangeStart || inRange(inv.dueDate)))
       .reduce((sum, inv) => sum + (inv.grandTotal || 0), 0);
 
-    const totalExpense = finance
+    const totalExpense = finList
       .filter((f) => f.type === 'Gider' && (!rangeStart || inRange(f.date)))
       .reduce((sum, f) => sum + (f.amount || 0), 0);
 
-    const totalIncome = finance
+    const totalIncome = finList
       .filter((f) => f.type === 'Gelir' && (!rangeStart || inRange(f.date)))
       .reduce((sum, f) => sum + (f.amount || 0), 0);
 
@@ -173,6 +179,8 @@ export default function Reports({ user }: ReportsProps) {
           </article>
         ))}
       </div>
+
+      <DashboardCharts invoices={invoices} finance={finance} />
     </div>
   );
 }

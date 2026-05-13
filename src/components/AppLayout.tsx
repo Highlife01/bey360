@@ -6,16 +6,19 @@ import {
   Users,
   FileText,
   Package,
+  Wallet,
   Settings as SettingsIcon,
+  LogOut,
+  Moon,
+  Sun,
   Menu,
   X,
   LogIn,
-  PieChart,
-  Bell,
   Search,
+  Bell,
+  ChevronRight,
+  TrendingUp,
   ShieldCheck,
-  Wallet,
-  Receipt,
   Boxes,
   Briefcase,
   Signal,
@@ -23,6 +26,7 @@ import {
 } from 'lucide-react';
 import { isSuperAdmin } from '../config/admins';
 import SEO from './SEO';
+import { getUserProfile } from '../services/userService';
 
 interface AppLayoutProps {
   user: User;
@@ -31,28 +35,28 @@ interface AppLayoutProps {
 }
 
 const navItems = [
-  { id: 'dashboard', path: '/panel', label: 'Ana Panel', icon: LayoutDashboard },
-  { id: 'cariler', path: '/cariler', label: 'Cari Hesaplar', icon: Users },
-  { id: 'faturalar', path: '/faturalar', label: 'Faturalar', icon: FileText },
-  { id: 'e-fatura', path: '/e-fatura', label: 'e-Fatura', icon: Receipt },
-  { id: 'stok', path: '/stok', label: 'Stok', icon: Package },
-  { id: 'stok-hareket', path: '/stok-hareket', label: 'Stok Hareketleri', icon: Boxes },
-  { id: 'kasa-banka', path: '/kasa-banka', label: 'Kasa & Banka', icon: Wallet },
-  { id: 'gelir-gider', path: '/gelir-gider', label: 'Gelir & Gider', icon: PieChart },
-  { id: 'raporlar', path: '/raporlar', label: 'Raporlar', icon: PieChart },
-  { id: 'bildirimler', path: '/bildirimler', label: 'Bildirimler', icon: Bell },
-  { id: 'muhasebeci', path: '/muhasebeci', label: 'Muhasebeci', icon: Briefcase },
+  { id: 'dashboard', path: '/panel', label: 'Panel', icon: LayoutDashboard },
+  { id: 'invoices', path: '/faturalar', label: 'Faturalar', icon: FileText },
+  { id: 'customers', path: '/cariler', label: 'Cariler', icon: Users },
+  { id: 'stocks', path: '/stoklar', label: 'Stoklar', icon: Package },
+  { id: 'cash-bank', path: '/kasa-banka', label: 'Kasa/Banka', icon: Wallet },
+  { id: 'finance', path: '/gelir-gider', icon: TrendingUp, label: 'Gelir/Gider' },
+  { id: 'reports', path: '/raporlar', label: 'Raporlar', icon: Briefcase },
   { id: 'ayarlar', path: '/ayarlar', label: 'Ayarlar', icon: SettingsIcon },
 ];
-
-import { getUserProfile } from '../services/userService';
 
 export default function AppLayout({ user, onSignOut, children }: AppLayoutProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [profile, setProfile] = useState<any>(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem('bey360_theme') || 'dark');
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('bey360_theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -66,53 +70,32 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
   const visibleNav = superAdmin
     ? [
         ...navItems,
-        { id: 'admin', path: '/admin', label: 'Süper Admin', icon: ShieldCheck },
+        { id: 'admin', path: '/admin', label: 'Sistem Admin', icon: ShieldCheck },
       ]
     : navItems;
-  const activeItem = visibleNav.find((item) => item.path === location.pathname) ?? visibleNav[0];
 
-  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const query = searchTerm.trim().toLocaleLowerCase('tr-TR');
-    if (!query) return;
+  const activeItem =
+    visibleNav.find((item) => item.path === location.pathname) || visibleNav[0];
 
-    const target =
-      query.includes('e-fatura') || query.includes('efatura')
-        ? '/e-fatura'
-        : query.includes('fatura')
-          ? '/faturalar'
-          : query.includes('cari') || query.includes('müşteri') || query.includes('musteri')
-            ? '/cariler'
-            : query.includes('stok') || query.includes('ürün') || query.includes('urun')
-              ? '/stok'
-              : query.includes('kasa') || query.includes('banka') || query.includes('tahsilat')
-                ? '/kasa-banka'
-                : query.includes('gelir') || query.includes('gider')
-                  ? '/gelir-gider'
-                  : query.includes('rapor') || query.includes('analiz')
-                    ? '/raporlar'
-                    : query.includes('muhasebe')
-                      ? '/muhasebeci'
-                      : query.includes('bildirim') || query.includes('uyarı') || query.includes('uyari')
-                        ? '/bildirimler'
-                        : '/panel';
-
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchTerm.trim()) return;
+    const target = searchTerm.toLowerCase().includes('fatura') ? '/faturalar' : '/cariler';
     navigate(target);
     setSearchTerm('');
   };
 
   return (
-    <div className="min-h-screen bg-[#07111f] font-sans text-slate-100">
+    <div className="min-h-screen font-sans">
       <SEO
         path={location.pathname}
         title={`${activeItem.label} | Bey360 Panel`}
         description="Bey360 uygulama paneli."
         noindex
       />
-      <div className="pointer-events-none fixed inset-0 opacity-35 [background-image:linear-gradient(rgba(103,232,249,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(103,232,249,0.08)_1px,transparent_1px)] [background-size:36px_36px]" />
       <div className="relative flex min-h-screen">
         <aside
-          className={`sticky top-0 z-50 flex h-screen shrink-0 flex-col border-r border-cyan-300/15 bg-slate-950/90 backdrop-blur-xl transition-all duration-500 ${
+          className={`sticky top-0 z-50 flex h-screen shrink-0 flex-col border-r border-[var(--border-color)] bg-[var(--bg-sidebar)] backdrop-blur-xl transition-all duration-500 ${
             isSidebarOpen ? 'w-72' : 'w-24'
           }`}
         >
@@ -158,23 +141,26 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
                 className={({ isActive }) =>
                   `group relative flex w-full items-center gap-4 rounded-lg border px-4 py-3 transition-all ${
                     isActive
-                      ? 'border-cyan-300/35 bg-cyan-300/10 text-cyan-100 shadow-[0_0_22px_rgba(103,232,249,0.12)]'
-                      : 'border-transparent text-slate-400 hover:border-white/10 hover:bg-white/[0.04] hover:text-slate-100'
-                  }`
+                      ? 'border-cyan-300/35 bg-cyan-300/10 text-cyan-100 shadow-[0_0_20px_rgba(34,211,238,0.12)]'
+                      : 'border-transparent text-slate-400 hover:bg-white/[0.03] hover:text-white'
+                  } ${!isSidebarOpen && 'justify-center'}`
                 }
               >
-                <item.icon size={19} className="shrink-0" />
-                <span className={`truncate text-sm font-black tracking-wide ${!isSidebarOpen && 'hidden'}`}>
+                <item.icon size={20} className="shrink-0" />
+                <span className={`text-sm font-black tracking-wide ${!isSidebarOpen && 'hidden'}`}>
                   {item.label}
                 </span>
+                {location.pathname === item.path && isSidebarOpen && (
+                  <ChevronRight size={14} className="ml-auto text-cyan-300" />
+                )}
               </NavLink>
             ))}
           </nav>
 
-          <div className="shrink-0 border-t border-white/10 p-4">
+          <div className="shrink-0 p-4">
             <div
-              className={`overflow-hidden rounded-lg border border-emerald-300/20 bg-emerald-300/5 p-4 transition-all ${
-                !isSidebarOpen ? 'hidden' : 'block'
+              className={`rounded-xl border border-white/5 bg-white/[0.02] p-5 ${
+                !isSidebarOpen && 'hidden'
               }`}
             >
               <div className="mb-3 flex items-center gap-2 text-emerald-100">
@@ -202,45 +188,52 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 overflow-auto">
-          <header className="sticky top-0 z-40 border-b border-cyan-300/15 bg-slate-950/75 px-5 py-4 backdrop-blur-xl md:px-8">
+        <main className="min-w-0 flex-1 overflow-auto bg-[var(--bg-main)]">
+          <header className="sticky top-0 z-40 border-b border-[var(--border-color)] bg-[var(--bg-sidebar)]/75 px-5 py-4 backdrop-blur-xl md:px-8">
             <div className="mx-auto flex max-w-[1680px] items-center justify-between gap-4">
               <div className="hidden min-w-0 flex-1 items-center gap-4 md:flex">
                 <form className="relative w-full max-w-xl" onSubmit={handleSearch}>
                   <Search
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 transition-colors"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] transition-colors"
                     size={18}
                   />
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] py-3 pl-12 pr-5 text-sm font-semibold text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300/35 focus:bg-cyan-300/5"
+                    className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] py-3 pl-12 pr-5 text-sm font-semibold text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]"
                     placeholder="Cari, fatura veya işlem ara..."
                   />
                 </form>
-                <div className="rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+                <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-3">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
                     Konum
                   </p>
-                  <p className="text-sm font-black text-white">{activeItem.label}</p>
+                  <p className="text-sm font-black text-[var(--text-main)]">{activeItem.label}</p>
                 </div>
               </div>
 
               <div className="flex shrink-0 items-center gap-3">
+                <button
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-muted)] transition-all hover:text-[var(--accent)] shadow-sm"
+                  title={theme === 'dark' ? 'Aydınlık Mod' : 'Karanlık Mod'}
+                >
+                  {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
+                </button>
                 <Link
                   to="/bildirimler"
-                  className="relative rounded-lg border border-white/10 bg-white/[0.04] p-3 text-slate-300 transition hover:border-cyan-300/35 hover:bg-cyan-300/10 hover:text-cyan-100"
+                  className="relative rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] p-3 text-[var(--text-muted)] transition hover:text-[var(--accent)]"
                   aria-label="Bildirimlere git"
                 >
                   <Bell size={19} />
-                  <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border border-slate-950 bg-rose-300" />
+                  <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-rose-500" />
                 </Link>
                 <div className="hidden h-10 w-px bg-white/10 sm:block" />
-                <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2">
+                <div className="flex items-center gap-3 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-2">
                   <div className="hidden text-right sm:block">
-                    <p className="text-sm font-black text-white">{profile?.displayName || user.email?.split('@')[0]}</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+                    <p className="text-sm font-black text-[var(--text-main)]">{profile?.displayName || user.email?.split('@')[0]}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">
                       {profile?.companyName || 'Bey360 Operatör'}
                     </p>
                   </div>

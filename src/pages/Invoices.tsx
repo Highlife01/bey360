@@ -12,11 +12,15 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
-  FileDown
+  FileDown,
+  Camera,
+  RefreshCw
 } from 'lucide-react';
 import { addInvoice, deleteInvoice, getInvoices, InvoiceRecord, updateInvoice } from '../services/invoiceService';
 import { getCustomers, CustomerRecord } from '../services/customerService';
 import { exportToExcel } from '../services/excelService';
+import { generateInvoicePDF } from '../services/pdfService';
+import { getUserProfile } from '../services/userService';
 
 interface InvoicesProps {
   user: User | null;
@@ -45,11 +49,27 @@ export default function Invoices({ user }: InvoicesProps) {
     vatRate: 20,
     vatAmount: 0,
     grandTotal: 0,
+    currency: 'TRY',
     issueDate: new Date().toISOString().slice(0, 10),
     dueDate: '',
     status: 'Beklemede',
     note: '',
   });
+  const [scanning, setScanning] = useState(false);
+
+  const handleMockScan = () => {
+    setScanning(true);
+    setTimeout(() => {
+      setForm(prev => ({
+        ...prev,
+        invoiceNumber: `SCAN-${Math.floor(Math.random() * 9000) + 1000}`,
+        amount: 1250.00,
+        note: 'OCR ile otomatik tarandı.'
+      }));
+      setScanning(false);
+      alert('Fatura başarıyla tarandı ve veriler dolduruldu!');
+    }, 2000);
+  };
 
   const loadData = async () => {
     if (!user) return;
@@ -149,6 +169,15 @@ export default function Invoices({ user }: InvoicesProps) {
     );
   };
 
+  const handleDownloadPDF = async (inv: InvoiceRecord) => {
+    if (!user) return;
+    const profile = await getUserProfile(user.uid);
+    await generateInvoicePDF({
+      ...inv,
+      subtotal: inv.amount
+    }, profile || {});
+  };
+
   if (loading) return <div className="page-section">Faturalar yükleniyor...</div>;
 
   return (
@@ -189,9 +218,19 @@ export default function Invoices({ user }: InvoicesProps) {
 
       <div className="grid gap-6 xl:grid-cols-[400px_1fr]">
         <section className="card">
-          <div className="flex items-center gap-3 mb-6">
-            <Plus className="text-cyan-300" />
-            <h3 className="mb-0">Yeni Fatura</h3>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <Plus className="text-cyan-300" size={18} />
+              <h3 className="mb-0">Yeni Fatura</h3>
+            </div>
+            <button 
+              onClick={handleMockScan}
+              disabled={scanning}
+              className="text-[10px] font-black uppercase tracking-widest bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 px-3 py-1.5 rounded-lg hover:bg-cyan-400/20 transition-all flex items-center gap-2"
+            >
+              {scanning ? <RefreshCw className="animate-spin" size={12} /> : <Camera size={12} />}
+              {scanning ? 'Taranıyor...' : 'OCR Tara'}
+            </button>
           </div>
           <form className="dashboard-form" onSubmit={handleSubmit}>
             <label>
@@ -250,6 +289,15 @@ export default function Invoices({ user }: InvoicesProps) {
                   <option value={1}>%1</option>
                   <option value={10}>%10</option>
                   <option value={20}>%20</option>
+                </select>
+              </label>
+              <label>
+                Para Birimi
+                <select value={(form as any).currency} onChange={(e) => setForm({...form, currency: e.target.value} as any)}>
+                  <option>TRY</option>
+                  <option>USD</option>
+                  <option>EUR</option>
+                  <option>GBP</option>
                 </select>
               </label>
             </div>
@@ -353,6 +401,13 @@ export default function Invoices({ user }: InvoicesProps) {
                       </td>
                       <td className="text-right">
                         <div className="flex justify-end gap-2">
+                          <button 
+                            onClick={() => handleDownloadPDF(inv)} 
+                            className="p-2 text-slate-500 hover:text-cyan-400 transition-colors"
+                            title="PDF Olarak İndir"
+                          >
+                            <FileDown size={16} />
+                          </button>
                           <button onClick={() => handleDelete(inv.id!)} className="p-2 text-slate-500 hover:text-rose-400 transition-colors">
                             <Trash2 size={16} />
                           </button>
