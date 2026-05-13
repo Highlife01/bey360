@@ -45,6 +45,8 @@ const navItems = [
   { id: 'ayarlar', path: '/ayarlar', label: 'Ayarlar', icon: SettingsIcon },
 ];
 
+const sidebarLogo = '/images/brand/bey360-command-logo-hero.png';
+
 export default function AppLayout({ user, onSignOut, children }: AppLayoutProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -102,9 +104,8 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
           <div className="shrink-0 p-5">
             <div className="flex items-center justify-between">
             <div className={`flex min-w-0 items-center gap-3 overflow-hidden ${!isSidebarOpen && 'hidden'}`}>
-              <img src="/logos/logo_branding.png" alt="Bey360" className="h-12 w-auto" />
+              <img src={sidebarLogo} alt="Bey360" className="h-11 w-auto object-contain drop-shadow-[0_0_18px_rgba(37,99,235,0.35)]" />
               <div className="min-w-0">
-                <p className="text-lg font-black leading-none tracking-tight text-white">Bey360</p>
                 <p className="mt-1 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
                   Command OS
                 </p>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { addCompany, CompanyRecord, getCompanies } from '../services/companyService';
 import { getUserProfile, updateUserProfile } from '../services/userService';
-import { User as UserIcon, Building2, Save, CheckCircle2, Plus, History, ShieldCheck } from 'lucide-react';
+import { User as UserIcon, Building2, Save, CheckCircle2, Plus, History, ShieldCheck, FileText } from 'lucide-react';
 import { getRecentLogs, AuditLog } from '../services/logService';
 
 interface SettingsProps {

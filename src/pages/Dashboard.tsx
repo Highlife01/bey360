@@ -49,6 +49,8 @@ import {
   getBusinessInsights,
 } from '../services/insightService';
 
+const heroLogo = '/images/brand/bey360-command-logo-hero.png';
+
 interface DashboardProps {
   user: User | null;
 }
@@ -548,8 +550,7 @@ export default function Dashboard({ user }: DashboardProps) {
                     Bey360 Command Deck
                   </div>
                   <div className="flex flex-col items-end">
-                    <img src="/logos/logo_branding.png" alt="Bey360 Logo" className="h-10 w-auto" />
-                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500">Gelişmiş Çözümler, Tek Platform</span>
+                    <img src={heroLogo} alt="Bey360 Logo" className="h-11 w-auto object-contain drop-shadow-[0_0_18px_rgba(37,99,235,0.35)]" />
                   </div>
                 </div>
                 <h2 className="max-w-3xl text-3xl font-black leading-tight text-white md:text-5xl">

@@ -8,7 +8,7 @@ import { ensureUserDashboard } from '../services/userService';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, ShieldCheck, Zap, Globe } from 'lucide-react';
 
-const brandVisual = '/images/brand/bey360-command-visual.png';
+const brandVisual = '/images/brand/bey360-command-logo-hero.png';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -76,11 +76,11 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="mb-10 overflow-hidden rounded-[32px] border border-cyan-300/20 bg-slate-950/60 shadow-[0_0_80px_rgba(37,99,235,0.28)]">
+            <div className="mb-10">
               <img
                 src={brandVisual}
                 alt="Bey360 gelişmiş çözümler tek platform"
-                className="aspect-[3/2] w-full object-cover"
+                className="max-h-[260px] w-full object-contain drop-shadow-[0_0_52px_rgba(37,99,235,0.42)]"
               />
             </div>
             <h1 className="text-5xl font-black text-white leading-tight mb-8">
@@ -128,11 +128,11 @@ export default function Login() {
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-md relative z-10"
         >
-          <div className="lg:hidden mb-8 mx-auto max-w-xs overflow-hidden rounded-3xl border border-cyan-300/20 bg-slate-950/70 shadow-2xl shadow-blue-500/20">
+          <div className="lg:hidden mb-8 mx-auto max-w-xs">
              <img
                src={brandVisual}
                alt="Bey360 gelişmiş çözümler tek platform"
-               className="aspect-[3/2] w-full object-cover"
+               className="w-full object-contain drop-shadow-[0_0_32px_rgba(37,99,235,0.4)]"
              />
           </div>
 

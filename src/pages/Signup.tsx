@@ -8,6 +8,8 @@ import { ensureUserDashboard } from '../services/userService';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, User, Phone, Building2, CheckCircle } from 'lucide-react';
 
+const heroLogo = '/images/brand/bey360-command-logo-hero.png';
+
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -74,7 +76,7 @@ export default function Signup() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <img src="/logos/logo_branding.png" alt="Bey360" className="h-16 mb-12" />
+            <img src={heroLogo} alt="Bey360" className="mb-12 h-20 w-auto object-contain drop-shadow-[0_0_34px_rgba(37,99,235,0.4)]" />
             <h2 className="text-5xl font-black text-white leading-tight mb-8">
               Dakikalar İçinde <br />
               <span className="text-emerald-400">Dijitalleşin.</span>

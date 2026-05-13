@@ -38,7 +38,7 @@ function buildSchema(page: SeoPage | undefined, canonical: string) {
     name: SITE_NAME,
     alternateName: 'Bey360 Online Muhasebe',
     url: SITE_URL,
-    logo: `${SITE_URL}/logo.png`,
+    logo: `${SITE_URL}/images/brand/bey360-command-logo-header.png`,
     description:
       'Bey360, işletmeler için online ön muhasebe, cari takip, stok yönetimi, fatura, e-Fatura ve e-Arşiv yönetim yazılımıdır.',
     email: 'info@bey360.com.tr',

@@ -27,7 +27,7 @@ const slides = [
   },
 ];
 
-const brandVisual = '/images/brand/bey360-command-visual.png';
+const brandVisual = '/images/brand/bey360-command-logo-hero.png';
 
 export const HeroCarousel = () => {
   const [current, setCurrent] = useState(0);
@@ -121,15 +121,13 @@ export const HeroCarousel = () => {
               initial={{ opacity: 0, x: 40, scale: 0.96 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ delay: 0.45, duration: 0.9, ease: 'easeOut' }}
-              className="hidden w-full max-w-[520px] justify-self-end lg:block"
+              className="hidden w-full max-w-[560px] justify-self-end lg:block"
             >
-              <div className="relative overflow-hidden rounded-[28px] border border-cyan-300/20 bg-slate-950/70 shadow-[0_0_70px_rgba(37,99,235,0.28)] backdrop-blur">
-                <img
-                  src={brandVisual}
-                  alt="Bey360 gelişmiş çözümler tek platform"
-                  className="aspect-[3/2] w-full object-cover"
-                />
-              </div>
+              <img
+                src={brandVisual}
+                alt="Bey360 gelişmiş çözümler tek platform"
+                className="w-full object-contain drop-shadow-[0_0_42px_rgba(37,99,235,0.42)]"
+              />
             </motion.div>
 
             <motion.div
@@ -141,7 +139,7 @@ export const HeroCarousel = () => {
               <img
                 src={brandVisual}
                 alt="Bey360 gelişmiş çözümler tek platform"
-                className="aspect-[3/2] w-full rounded-2xl border border-white/10 object-cover shadow-2xl shadow-blue-500/20"
+                className="w-full object-contain drop-shadow-[0_0_30px_rgba(37,99,235,0.35)]"
               />
             </motion.div>
           </div>
