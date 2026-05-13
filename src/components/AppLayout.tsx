@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { User } from 'firebase/auth';
 import {
@@ -19,6 +19,7 @@ import {
   Boxes,
   Briefcase,
   Signal,
+  Plus,
 } from 'lucide-react';
 import { isSuperAdmin } from '../config/admins';
 import SEO from './SEO';
