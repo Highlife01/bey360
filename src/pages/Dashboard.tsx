@@ -129,9 +129,6 @@ const severityStyles: Record<
   },
 };
 
-    line: 'from-rose-300 to-pink-300',
-  },
-];
 
 const opsLinks = [
   { label: 'Yeni Fatura', path: '/faturalar', icon: Plus },
