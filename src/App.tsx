@@ -21,6 +21,10 @@ import Admin from './pages/Admin';
 import SeoLanding from './pages/SeoLanding';
 import Blog from './pages/Blog';
 import BlogDetail from './pages/BlogDetail';
+import Features from './pages/Features';
+import Pricing from './pages/Pricing';
+import About from './pages/About';
+import Contact from './pages/Contact';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/AppLayout';
 import { seoPages } from './data/seoPages';
@@ -70,6 +74,10 @@ function App() {
       ))}
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:id" element={<BlogDetail />} />
+      <Route path="/ozellikler" element={<Features />} />
+      <Route path="/fiyatlar" element={<Pricing />} />
+      <Route path="/hakkimizda" element={<About />} />
+      <Route path="/iletisim" element={<Contact />} />
       <Route
         path="/panel"
         element={

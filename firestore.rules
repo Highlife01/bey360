@@ -26,7 +26,14 @@ service cloud.firestore {
     function isValidContactMessage() {
       let data = request.resource.data;
 
-      return data.keys().hasOnly([
+      return data.keys().hasAll([
+          'name',
+          'email',
+          'phone',
+          'message',
+          'createdAt'
+        ])
+        && data.keys().hasOnly([
           'name',
           'email',
           'phone',
@@ -41,11 +48,10 @@ service cloud.firestore {
         && isShortText(data.email, 5, 120)
         && isShortText(data.phone, 7, 32)
         && isShortText(data.message, 10, 1000)
-        && data.source == 'landing-contact'
-        && data.status == 'new'
-        && isShortText(data.page, 1, 120)
-        && isShortText(data.userAgent, 1, 240)
-        && data.createdAt == request.time;
+        && (!('source' in data) || data.source == 'landing-contact')
+        && (!('status' in data) || data.status == 'new')
+        && (!('page' in data) || isShortText(data.page, 1, 120))
+        && (!('userAgent' in data) || isShortText(data.userAgent, 1, 240));
     }
 
     match /messages/{messageId} {

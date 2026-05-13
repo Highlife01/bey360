@@ -1,0 +1,68 @@
+[debug] [2026-05-13T16:14:28.566Z] ----------------------------------------------------------------------
+[debug] [2026-05-13T16:14:28.577Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\cebra\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only firestore:rules --project advera-c8dd0
+[debug] [2026-05-13T16:14:28.577Z] CLI Version:   15.17.0
+[debug] [2026-05-13T16:14:28.578Z] Platform:      win32
+[debug] [2026-05-13T16:14:28.578Z] Node Version:  v26.1.0
+[debug] [2026-05-13T16:14:28.578Z] Time:          Wed May 13 2026 19:14:28 GMT+0300 (Türkiye Standart Saati)
+[debug] [2026-05-13T16:14:28.578Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-05-13T16:14:30.776Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-13T16:14:30.778Z] > authorizing via signed-in user (cebrailkara@gmail.com)
+[debug] [2026-05-13T16:14:30.778Z] [iam] checking project advera-c8dd0 for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-05-13T16:14:30.779Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:30.780Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:30.781Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/advera-c8dd0:testIamPermissions [none]
+[debug] [2026-05-13T16:14:30.781Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/advera-c8dd0:testIamPermissions  x-goog-user-project=advera-c8dd0
+[debug] [2026-05-13T16:14:30.781Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/advera-c8dd0:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-05-13T16:14:32.012Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/advera-c8dd0:testIamPermissions 200
+[debug] [2026-05-13T16:14:32.012Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/advera-c8dd0:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[info] 
+[info] === Deploying to 'advera-c8dd0'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-05-13T16:14:32.018Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:32.018Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:32.018Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/advera-c8dd0/databases/(default) [none]
+[debug] [2026-05-13T16:14:33.139Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/advera-c8dd0/databases/(default) 200
+[debug] [2026-05-13T16:14:33.139Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/advera-c8dd0/databases/(default) {"name":"projects/advera-c8dd0/databases/(default)","uid":"7c238306-1dc1-4042-9c60-8f2efa8f7c04","createTime":"2026-02-15T09:30:29.952217Z","updateTime":"2026-02-15T09:30:29.952217Z","locationId":"nam5","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-05-13T15:14:30.524420Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"s","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"IPLHrLLUtpQDMNyqzbm15pID"}
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2026-05-13T16:14:33.140Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:33.141Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:33.141Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/advera-c8dd0:test [none]
+[debug] [2026-05-13T16:14:33.141Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/advera-c8dd0:test [omitted]
+[debug] [2026-05-13T16:14:34.213Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/advera-c8dd0:test 200
+[debug] [2026-05-13T16:14:34.213Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/advera-c8dd0:test {}
+[info] +  cloud.firestore: rules file firestore.rules compiled successfully 
+[debug] [2026-05-13T16:14:34.214Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:34.214Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:34.215Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/releases pageSize=10&pageToken=
+[debug] [2026-05-13T16:14:34.970Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/releases 200
+[debug] [2026-05-13T16:14:34.970Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/releases {"releases":[{"name":"projects/advera-c8dd0/releases/cloud.firestore","rulesetName":"projects/advera-c8dd0/rulesets/38b587f7-66e1-4f99-93c4-27aa236f30cd","createTime":"2026-02-15T10:38:55.171256Z","updateTime":"2026-05-13T15:44:02.210549Z"},{"name":"projects/advera-c8dd0/releases/firebase.storage/advera-c8dd0.firebasestorage.app","rulesetName":"projects/advera-c8dd0/rulesets/dfd2b8f7-3d78-4e53-b7e6-b72fd22d23de","createTime":"2026-05-11T17:48:08.971319Z","updateTime":"2026-05-11T17:48:08.971319Z"}]}
+[debug] [2026-05-13T16:14:34.996Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:34.996Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:34.996Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/rulesets/38b587f7-66e1-4f99-93c4-27aa236f30cd [none]
+[debug] [2026-05-13T16:14:35.343Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/rulesets/38b587f7-66e1-4f99-93c4-27aa236f30cd 200
+[debug] [2026-05-13T16:14:35.343Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/rulesets/38b587f7-66e1-4f99-93c4-27aa236f30cd [omitted]
+[info] i  firestore: uploading rules firestore.rules... 
+[debug] [2026-05-13T16:14:35.344Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:35.344Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:35.344Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/rulesets [none]
+[debug] [2026-05-13T16:14:35.344Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/rulesets [omitted]
+[debug] [2026-05-13T16:14:36.306Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/rulesets 200
+[debug] [2026-05-13T16:14:36.306Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/rulesets {"name":"projects/advera-c8dd0/rulesets/f83ddf27-1e59-477a-8cd0-4a3e1fbcb7e9","source":{"files":[{"content":"rules_version = '2';\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function isSignedIn() {\n      return request.auth != null;\n    }\n\n    function isSuperAdmin() {\n      return isSignedIn()\n        && request.auth.token.email in [\n          'cebrailkara@gmail.com',\n          'info@beyogluteknoloji.com',\n          'cebokar@gmail.com'\n        ];\n    }\n\n    function isOwner(userId) {\n      return isSignedIn() && request.auth.uid == userId;\n    }\n\n    function isShortText(value, min, max) {\n      return value is string && value.size() >= min && value.size() <= max;\n    }\n\n    function isValidContactMessage() {\n      let data = request.resource.data;\n\n      return data.keys().hasAll([\n          'name',\n          'email',\n          'phone',\n          'message',\n          'createdAt'\n        ])\n        && data.keys().hasOnly([\n          'name',\n          'email',\n          'phone',\n          'message',\n          'source',\n          'page',\n          'status',\n          'userAgent',\n          'createdAt'\n        ])\n        && isShortText(data.name, 2, 80)\n        && isShortText(data.email, 5, 120)\n        && isShortText(data.phone, 7, 32)\n        && isShortText(data.message, 10, 1000)\n        && (!('source' in data) || data.source == 'landing-contact')\n        && (!('status' in data) || data.status == 'new')\n        && (!('page' in data) || isShortText(data.page, 1, 120))\n        && (!('userAgent' in data) || isShortText(data.userAgent, 1, 240));\n    }\n\n    match /messages/{messageId} {\n      allow create: if isValidContactMessage();\n      allow read, update, delete: if isSuperAdmin();\n    }\n\n    match /users/{userId} {\n      allow read, create, update: if isOwner(userId) || isSuperAdmin();\n      allow delete: if isSuperAdmin();\n\n      match /{document=**} {\n        allow read, write: if isOwner(userId) || isSuperAdmin();\n      }\n    }\n\n    match /{document=**} {\n      allow read, write: if false;\n    }\n  }\n}\n","name":"firestore.rules"}]},"createTime":"2026-05-13T16:14:33.667599Z","metadata":{"services":["cloud.firestore"]}}
+[debug] [2026-05-13T16:14:36.306Z] [rules] created ruleset projects/advera-c8dd0/rulesets/f83ddf27-1e59-477a-8cd0-4a3e1fbcb7e9
+[debug] [2026-05-13T16:14:36.306Z] [rules] releasing cloud.firestore with ruleset projects/advera-c8dd0/rulesets/f83ddf27-1e59-477a-8cd0-4a3e1fbcb7e9
+[debug] [2026-05-13T16:14:36.307Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:36.307Z] Checked if tokens are valid: true, expires at: 1778689844318
+[debug] [2026-05-13T16:14:36.307Z] >>> [apiv2][query] PATCH https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/releases/cloud.firestore [none]
+[debug] [2026-05-13T16:14:36.307Z] >>> [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/releases/cloud.firestore {"release":{"name":"projects/advera-c8dd0/releases/cloud.firestore","rulesetName":"projects/advera-c8dd0/rulesets/f83ddf27-1e59-477a-8cd0-4a3e1fbcb7e9"}}
+[debug] [2026-05-13T16:14:37.268Z] <<< [apiv2][status] PATCH https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/releases/cloud.firestore 200
+[debug] [2026-05-13T16:14:37.268Z] <<< [apiv2][body] PATCH https://firebaserules.googleapis.com/v1/projects/advera-c8dd0/releases/cloud.firestore {"name":"projects/advera-c8dd0/releases/cloud.firestore","rulesetName":"projects/advera-c8dd0/rulesets/f83ddf27-1e59-477a-8cd0-4a3e1fbcb7e9","createTime":"2026-02-15T10:38:55.171256Z","updateTime":"2026-05-13T16:14:34.624999Z"}
+[debug] [2026-05-13T16:14:37.268Z] [rules] updated release projects/advera-c8dd0/releases/cloud.firestore
+[info] +  firestore: released rules firestore.rules to cloud.firestore 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/advera-c8dd0/overview
