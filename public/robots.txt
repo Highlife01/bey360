@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /giris
+Disallow: /kayit-ol
+Disallow: /panel
+Disallow: /admin
+Disallow: /cariler
+Disallow: /faturalar
+Disallow: /e-fatura
+Disallow: /stok
+Disallow: /stok-hareket
+Disallow: /kasa-banka
+Disallow: /gelir-gider
+Disallow: /raporlar
+Disallow: /bildirimler
+Disallow: /ayarlar
+Disallow: /muhasebeci
+Disallow: /api
+Disallow: /odeme
+Disallow: /hesabim
+
+Sitemap: https://bey360.com.tr/sitemap.xml
