@@ -74,7 +74,7 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <img src="/logos/logo_branding.png" alt="Bey360" className="h-16 mb-12" />
+            <img src="/logos/logo_branding.png" alt="Bey360" className="h-24 mb-12" />
             <h1 className="text-6xl font-black text-white leading-tight mb-8">
               Yeni Nesil <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">Ön Muhasebe</span>
@@ -121,7 +121,7 @@ export default function Login() {
           className="w-full max-w-md relative z-10"
         >
           <div className="lg:hidden mb-12 flex justify-center">
-             <img src="/logos/logo_branding.png" alt="Bey360" className="h-10" />
+             <img src="/logos/logo_branding.png" alt="Bey360" className="h-12" />
           </div>
 
           <div className="bg-white/[0.03] backdrop-blur-3xl p-8 lg:p-12 rounded-[40px] border border-white/10 shadow-2xl">

@@ -37,7 +37,7 @@ export default function Landing() {
       <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100">
         <div className="flex items-center justify-between h-20 px-6 max-w-7xl mx-auto">
           <Link to="/" className="flex items-center gap-2 group">
-            <img src="/logos/logo_branding.png" alt="Bey360 Logo" className="h-10 w-auto group-hover:scale-105 transition-transform" />
+            <img src="/logos/logo_branding.png" alt="Bey360 Logo" className="h-12 w-auto group-hover:scale-105 transition-transform" />
             <span className="hidden text-2xl font-black tracking-tighter text-slate-900">BEY360</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500">

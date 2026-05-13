@@ -74,7 +74,7 @@ export default function Signup() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <img src="/logos/logo_branding.png" alt="Bey360" className="h-12 mb-12" />
+            <img src="/logos/logo_branding.png" alt="Bey360" className="h-16 mb-12" />
             <h2 className="text-5xl font-black text-white leading-tight mb-8">
               Dakikalar İçinde <br />
               <span className="text-emerald-400">Dijitalleşin.</span>

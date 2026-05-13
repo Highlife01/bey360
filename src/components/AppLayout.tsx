@@ -119,7 +119,7 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
           <div className="shrink-0 p-5">
             <div className="flex items-center justify-between">
             <div className={`flex min-w-0 items-center gap-3 overflow-hidden ${!isSidebarOpen && 'hidden'}`}>
-              <img src="/logos/logo_branding.png" alt="Bey360" className="h-10 w-auto" />
+              <img src="/logos/logo_branding.png" alt="Bey360" className="h-12 w-auto" />
               <div className="min-w-0">
                 <p className="text-lg font-black leading-none tracking-tight text-white">Bey360</p>
                 <p className="mt-1 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
