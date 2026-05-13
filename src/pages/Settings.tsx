@@ -16,6 +16,10 @@ export default function Settings({ user }: SettingsProps) {
     phone: '',
     companyName: '',
     email: '',
+    pdfPrimaryColor: '#6366f1',
+    pdfFooterText: '',
+    pdfShowLogo: true,
+    pdfShowAddress: true,
   });
   const [form, setForm] = useState<Omit<CompanyRecord, 'id' | 'createdAt'>>({
     name: '',
@@ -48,6 +52,10 @@ export default function Settings({ user }: SettingsProps) {
           phone: userProfile.phone || '',
           companyName: userProfile.companyName || '',
           email: userProfile.email || user.email || '',
+          pdfPrimaryColor: userProfile.pdfPrimaryColor || '#6366f1',
+          pdfFooterText: userProfile.pdfFooterText || '',
+          pdfShowLogo: userProfile.pdfShowLogo !== false,
+          pdfShowAddress: userProfile.pdfShowAddress !== false,
         });
       }
     };
@@ -243,6 +251,86 @@ export default function Settings({ user }: SettingsProps) {
           </div>
         </section>
       </div>
+
+      <section className="card mt-6">
+        <div className="flex items-center gap-3 mb-6">
+          <FileText className="text-cyan-300" />
+          <h3 className="mb-0">PDF & Fatura Tasarımı</h3>
+        </div>
+        <div className="grid lg:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <label>
+                Fatura Ana Rengi
+                <div className="flex gap-3 mt-1">
+                  <input 
+                    type="color" 
+                    value={profile.pdfPrimaryColor} 
+                    onChange={e => setProfile({...profile, pdfPrimaryColor: e.target.value})} 
+                    className="h-10 w-10 p-0 border-none rounded cursor-pointer"
+                  />
+                  <input 
+                    type="text" 
+                    value={profile.pdfPrimaryColor} 
+                    onChange={e => setProfile({...profile, pdfPrimaryColor: e.target.value})} 
+                    className="flex-1 font-mono uppercase"
+                  />
+                </div>
+              </label>
+              <div className="flex flex-col justify-end space-y-3 pb-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={profile.pdfShowLogo} 
+                    onChange={e => setProfile({...profile, pdfShowLogo: e.target.checked})} 
+                    className="w-4 h-4 accent-cyan-400"
+                  />
+                  <span className="text-xs font-bold text-slate-300">Logo Gösterilsin</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={profile.pdfShowAddress} 
+                    onChange={e => setProfile({...profile, pdfShowAddress: e.target.checked})} 
+                    className="w-4 h-4 accent-cyan-400"
+                  />
+                  <span className="text-xs font-bold text-slate-300">Adres Gösterilsin</span>
+                </label>
+              </div>
+            </div>
+            <label>
+              Fatura Alt Bilgi (Footer)
+              <textarea 
+                value={profile.pdfFooterText} 
+                onChange={e => setProfile({...profile, pdfFooterText: e.target.value})} 
+                placeholder="Örn: Bu fatura Bey360 tarafından oluşturulmuştur. Teşekkür ederiz."
+                rows={2}
+              />
+            </label>
+          </div>
+          
+          <div className="bg-slate-900/50 rounded-xl border border-white/5 p-6 flex flex-col items-center justify-center text-center">
+            <div className="w-full max-w-[200px] aspect-[1/1.4] bg-white rounded shadow-2xl overflow-hidden relative mb-4">
+              <div className="h-2 w-full" style={{ backgroundColor: profile.pdfPrimaryColor }} />
+              <div className="p-3 space-y-2">
+                {profile.pdfShowLogo && <div className="w-8 h-8 bg-slate-200 rounded" />}
+                <div className="w-full h-1 bg-slate-100" />
+                <div className="w-2/3 h-1 bg-slate-100" />
+                <div className="mt-6 space-y-1">
+                  <div className="w-full h-0.5 bg-slate-50" />
+                  <div className="w-full h-0.5 bg-slate-50" />
+                  <div className="w-full h-0.5 bg-slate-50" />
+                </div>
+                <div className="absolute bottom-4 left-0 right-0 px-3">
+                   <div className="w-full h-[2px] bg-slate-100 mb-1" />
+                   <div className="w-1/2 h-[2px] bg-slate-100 mx-auto" />
+                </div>
+              </div>
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Önizleme (Temsili)</p>
+          </div>
+        </div>
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-2 mt-6">
         <section className="card">

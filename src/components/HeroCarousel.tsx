@@ -27,6 +27,8 @@ const slides = [
   },
 ];
 
+const brandVisual = '/images/brand/bey360-command-visual.png';
+
 export const HeroCarousel = () => {
   const [current, setCurrent] = useState(0);
 
@@ -63,54 +65,84 @@ export const HeroCarousel = () => {
           </div>
 
           {/* Content */}
-          <div className="relative z-10 h-full max-w-7xl mx-auto px-6 flex flex-col justify-center items-start text-left">
+          <div className="relative z-10 grid h-full max-w-7xl grid-cols-1 items-center gap-10 px-6 mx-auto lg:grid-cols-[minmax(0,1fr)_minmax(360px,520px)]">
+            <div className="flex flex-col items-start text-left">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.8 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-600/20 border border-indigo-500/30 rounded-full mb-6 backdrop-blur-md"
+              >
+                <span className="text-[10px] font-black tracking-widest uppercase text-indigo-400">
+                  {slides[current].badge}
+                </span>
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+                className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.9] text-white max-w-4xl"
+              >
+                {slides[current].title}
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7, duration: 0.8 }}
+                className="mt-8 text-xl md:text-2xl text-slate-300 max-w-2xl font-medium leading-relaxed"
+              >
+                {slides[current].subtitle}
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9, duration: 0.8 }}
+                className="mt-10 flex flex-wrap items-center gap-4"
+              >
+                <Link
+                  to="/signup"
+                  className="px-8 py-4 bg-white text-slate-950 rounded-2xl font-black shadow-2xl hover:bg-slate-200 transition-all hover:scale-[1.05] flex items-center gap-2"
+                >
+                  Ücretsiz Başla <ArrowRight size={20} />
+                </Link>
+                <Link
+                  to="/login"
+                  className="px-8 py-4 bg-white/10 border border-white/20 text-white rounded-2xl font-black hover:bg-white/20 transition-all backdrop-blur-sm"
+                >
+                  Giriş Yap
+                </Link>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 40, scale: 0.96 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ delay: 0.45, duration: 0.9, ease: 'easeOut' }}
+              className="hidden w-full max-w-[520px] justify-self-end lg:block"
+            >
+              <div className="relative overflow-hidden rounded-[28px] border border-cyan-300/20 bg-slate-950/70 shadow-[0_0_70px_rgba(37,99,235,0.28)] backdrop-blur">
+                <img
+                  src={brandVisual}
+                  alt="Bey360 gelişmiş çözümler tek platform"
+                  className="aspect-[3/2] w-full object-cover"
+                />
+              </div>
+            </motion.div>
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-600/20 border border-indigo-500/30 rounded-full mb-6 backdrop-blur-md"
+              transition={{ delay: 1, duration: 0.7 }}
+              className="mx-auto mt-2 hidden w-full max-w-[360px] sm:block lg:hidden"
             >
-              <span className="text-[10px] font-black tracking-widest uppercase text-indigo-400">
-                {slides[current].badge}
-              </span>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.9] text-white max-w-4xl"
-            >
-              {slides[current].title}
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.8 }}
-              className="mt-8 text-xl md:text-2xl text-slate-300 max-w-2xl font-medium leading-relaxed"
-            >
-              {slides[current].subtitle}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.8 }}
-              className="mt-10 flex flex-wrap items-center gap-4"
-            >
-              <Link
-                to="/signup"
-                className="px-8 py-4 bg-white text-slate-950 rounded-2xl font-black shadow-2xl hover:bg-slate-200 transition-all hover:scale-[1.05] flex items-center gap-2"
-              >
-                Ücretsiz Başla <ArrowRight size={20} />
-              </Link>
-              <Link
-                to="/login"
-                className="px-8 py-4 bg-white/10 border border-white/20 text-white rounded-2xl font-black hover:bg-white/20 transition-all backdrop-blur-sm"
-              >
-                Giriş Yap
-              </Link>
+              <img
+                src={brandVisual}
+                alt="Bey360 gelişmiş çözümler tek platform"
+                className="aspect-[3/2] w-full rounded-2xl border border-white/10 object-cover shadow-2xl shadow-blue-500/20"
+              />
             </motion.div>
           </div>
         </motion.div>

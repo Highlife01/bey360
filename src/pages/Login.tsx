@@ -8,6 +8,8 @@ import { ensureUserDashboard } from '../services/userService';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, ShieldCheck, Zap, Globe } from 'lucide-react';
 
+const brandVisual = '/images/brand/bey360-command-visual.png';
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -68,17 +70,20 @@ export default function Login() {
           />
         </div>
 
-        <div className="relative z-10 max-w-lg">
+        <div className="relative z-10 w-full max-w-xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="mb-12">
-              <img src="/logos/logo_branding.png" alt="Bey360" className="h-20 mb-2" />
-              <p className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.2em] ml-2">Gelişmiş Çözümler, Tek Platform</p>
+            <div className="mb-10 overflow-hidden rounded-[32px] border border-cyan-300/20 bg-slate-950/60 shadow-[0_0_80px_rgba(37,99,235,0.28)]">
+              <img
+                src={brandVisual}
+                alt="Bey360 gelişmiş çözümler tek platform"
+                className="aspect-[3/2] w-full object-cover"
+              />
             </div>
-            <h1 className="text-6xl font-black text-white leading-tight mb-8">
+            <h1 className="text-5xl font-black text-white leading-tight mb-8">
               Yeni Nesil <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">Ön Muhasebe</span>
             </h1>
@@ -123,8 +128,12 @@ export default function Login() {
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-md relative z-10"
         >
-          <div className="lg:hidden mb-12 flex justify-center">
-             <img src="/logos/logo_branding.png" alt="Bey360" className="h-12" />
+          <div className="lg:hidden mb-8 mx-auto max-w-xs overflow-hidden rounded-3xl border border-cyan-300/20 bg-slate-950/70 shadow-2xl shadow-blue-500/20">
+             <img
+               src={brandVisual}
+               alt="Bey360 gelişmiş çözümler tek platform"
+               className="aspect-[3/2] w-full object-cover"
+             />
           </div>
 
           <div className="bg-white/[0.03] backdrop-blur-3xl p-8 lg:p-12 rounded-[40px] border border-white/10 shadow-2xl">

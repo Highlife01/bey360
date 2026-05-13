@@ -6,9 +6,6 @@ Allow: /hakkimizda
 Allow: /iletisim
 Allow: /blog
 Allow: /blog/
-Allow: /login
-Allow: /signup
-
 # Panel ve Hassas Alanlar
 Disallow: /panel
 Disallow: /panel/
@@ -24,6 +21,8 @@ Disallow: /ayarlar
 Disallow: /bildirimler
 Disallow: /profil
 Disallow: /e-fatura
+Disallow: /login
+Disallow: /signup
 
 # Sitemap
 Sitemap: https://www.bey360.com.tr/sitemap.xml

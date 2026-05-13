@@ -16,7 +16,8 @@ import {
   Camera,
   RefreshCw
 } from 'lucide-react';
-import { addInvoice, deleteInvoice, getInvoices, InvoiceRecord, updateInvoice } from '../services/invoiceService';
+import { addInvoice, deleteInvoice, getInvoices, InvoiceRecord, updateInvoice, performRealOCR } from '../services/invoiceService';
+import { useRef } from 'react';
 import { getCustomers, CustomerRecord } from '../services/customerService';
 import { exportToExcel } from '../services/excelService';
 import { generateInvoicePDF } from '../services/pdfService';
@@ -57,18 +58,31 @@ export default function Invoices({ user }: InvoicesProps) {
   });
   const [scanning, setScanning] = useState(false);
 
-  const handleMockScan = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleRealScan = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
     setScanning(true);
-    setTimeout(() => {
-      setForm(prev => ({
-        ...prev,
-        invoiceNumber: `SCAN-${Math.floor(Math.random() * 9000) + 1000}`,
-        amount: 1250.00,
-        note: 'OCR ile otomatik tarandı.'
-      }));
+    try {
+      const result = await performRealOCR(file);
+      if (result.success && result.extractedData) {
+        setForm(prev => ({
+          ...prev,
+          issueDate: result.extractedData.date || prev.issueDate,
+          amount: result.extractedData.amount || prev.amount,
+          note: `OCR ile tarandı. Bulunan VKN: ${result.extractedData.vkn || 'Yok'}`
+        }));
+        alert('Fatura başarıyla tarandı!');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Tarama sırasında bir hata oluştu.');
+    } finally {
       setScanning(false);
-      alert('Fatura başarıyla tarandı ve veriler dolduruldu!');
-    }, 2000);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const loadData = async () => {
@@ -223,13 +237,21 @@ export default function Invoices({ user }: InvoicesProps) {
               <Plus className="text-cyan-300" size={18} />
               <h3 className="mb-0">Yeni Fatura</h3>
             </div>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleRealScan} 
+              className="hidden" 
+              accept="image/*" 
+            />
             <button 
-              onClick={handleMockScan}
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
               disabled={scanning}
               className="text-[10px] font-black uppercase tracking-widest bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 px-3 py-1.5 rounded-lg hover:bg-cyan-400/20 transition-all flex items-center gap-2"
             >
               {scanning ? <RefreshCw className="animate-spin" size={12} /> : <Camera size={12} />}
-              {scanning ? 'Taranıyor...' : 'OCR Tara'}
+              {scanning ? 'Taranıyor...' : 'Görselden Tara'}
             </button>
           </div>
           <form className="dashboard-form" onSubmit={handleSubmit}>

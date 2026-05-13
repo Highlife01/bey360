@@ -1,5 +1,6 @@
 import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { createWorker } from 'tesseract.js';
 
 export interface InvoiceRecord {
   id?: string;
@@ -43,4 +44,29 @@ export async function updateInvoice(uid: string, invoiceId: string, updates: Par
 export async function deleteInvoice(uid: string, invoiceId: string) {
   const docRef = doc(getInvoicesCollection(uid), invoiceId);
   await deleteDoc(docRef);
+}
+
+export async function performRealOCR(file: File) {
+  const worker = await createWorker('tur');
+  const { data: { text } } = await worker.recognize(file);
+  await worker.terminate();
+
+  // Basic regex parsing for Turkish invoices
+  const dateRegex = /(\d{2})[\.\/](\d{2})[\.\/](\d{4})/;
+  const amountRegex = /(?:TOPLAM|GENEL TOPLAM|TUTAR).*?(\d+[\.,]\d{2})/i;
+  const vknRegex = /(?:VKN|TCKN|VERGİ NO).*?(\d{10,11})/i;
+
+  const dateMatch = text.match(dateRegex);
+  const amountMatch = text.match(amountRegex);
+  const vknMatch = text.match(vknRegex);
+
+  return {
+    success: true,
+    text,
+    extractedData: {
+      date: dateMatch ? `${dateMatch[1]}.${dateMatch[2]}.${dateMatch[3]}` : null,
+      amount: amountMatch ? parseFloat(amountMatch[1].replace(',', '.')) : null,
+      vkn: vknMatch ? vknMatch[1] : null,
+    }
+  };
 }

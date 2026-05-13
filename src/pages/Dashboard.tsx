@@ -36,6 +36,7 @@ import { getContactMessages, ContactMessage } from '../services/messageService';
 import { CashBankRecord, getCashBankRecords } from '../services/cashBankService';
 import { CustomerRecord, getCustomers } from '../services/customerService';
 import { getDashboardStats } from '../services/dashboardService';
+import { checkLowStockAlerts, checkOverdueInvoices } from '../services/automationService';
 import { exportToExcel } from '../services/excelService';
 import { FinanceRecord, getFinanceRecords } from '../services/financeService';
 import { getInvoices, InvoiceRecord } from '../services/invoiceService';
@@ -267,6 +268,10 @@ export default function Dashboard({ user }: DashboardProps) {
           getNotifications(user.uid),
           isSuperAdmin(user) ? getContactMessages() : Promise.resolve([]),
         ]);
+
+      // Trigger automation checks in background
+      checkLowStockAlerts(user.uid);
+      checkOverdueInvoices(user.uid);
 
       setStats(nextStats);
       setInsights(nextInsights);
