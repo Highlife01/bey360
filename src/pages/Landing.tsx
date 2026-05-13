@@ -14,6 +14,8 @@ import {
   Zap,
 } from 'lucide-react';
 import SEO from '../components/SEO';
+import { submitContactMessage } from '../services/messageService';
+import { ensureUserDashboard } from '../services/userService';
 import { HeroCarousel } from '../components/HeroCarousel';
 
 const features = [
@@ -280,7 +282,6 @@ function ContactForm() {
     setLoading(true);
     setError('');
     try {
-      const { submitContactMessage } = await import('../services/messageService');
       await submitContactMessage(formData);
       setSuccess(true);
       setFormData({ name: '', email: '', phone: '', message: '' });

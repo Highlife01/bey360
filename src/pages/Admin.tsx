@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { ShieldCheck, Users as UsersIcon, FileText, Wallet, Package, PieChart, RefreshCw, LucideIcon, Mail } from 'lucide-react';
 import { isSuperAdmin } from '../config/admins';
 import { listAllUsers, AdminUserRow } from '../services/adminService';
-import type { ContactMessage } from '../services/messageService';
+import { getContactMessages, ContactMessage } from '../services/messageService';
 
 interface AdminProps {
   user: User | null;
@@ -21,8 +21,7 @@ export default function Admin({ user }: AdminProps) {
     setLoading(true);
     setError('');
     try {
-      const [u, messageModule] = await Promise.all([listAllUsers(), import('../services/messageService')]);
-      const m = await messageModule.getContactMessages();
+      const [u, m] = await Promise.all([listAllUsers(), getContactMessages()]);
       setRows(u);
       setMessages(m);
     } catch (err) {
