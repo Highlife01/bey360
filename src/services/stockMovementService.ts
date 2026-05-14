@@ -1,5 +1,6 @@
 import { addDoc, collection, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { logAction } from './logService';
 
 export interface StockMovementRecord {
   id?: string;
@@ -19,6 +20,7 @@ export async function addStockMovement(uid: string, movement: Omit<StockMovement
     ...movement,
     createdAt: serverTimestamp(),
   });
+  await logAction(uid, 'Stok Hareketi İşlendi', 'Stoklar', `${movement.movementType}: ${movement.quantity} ${movement.stockName}`);
   return { id: docRef.id, ...movement };
 }
 

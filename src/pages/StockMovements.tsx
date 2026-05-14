@@ -16,6 +16,7 @@ import {
 import { addStockMovement, getStockMovements, StockMovementRecord } from '../services/stockMovementService';
 import { getStockItems, StockRecord, updateStockItem } from '../services/stockService';
 import { exportToExcel } from '../services/excelService';
+import { logAction } from '../services/logService';
 
 interface StockMovementsProps {
   user: User | null;
@@ -77,12 +78,14 @@ export default function StockMovements({ user }: StockMovementsProps) {
     }
 
     await addStockMovement(user.uid, form);
+    await logAction(user.uid, 'Stok Hareketi', 'Stoklar', `${form.movementType}: ${form.quantity} ${form.stockName}`);
+    
     setForm({ 
       stockCode: '', stockName: '', movementType: 'Giriş', 
       quantity: 0, date: new Date().toISOString().slice(0, 10), note: '' 
     });
     setIsFormOpen(false);
-    loadData();
+    await loadData();
   };
 
   const filteredMovements = useMemo(() => {

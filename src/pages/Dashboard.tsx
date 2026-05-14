@@ -42,12 +42,26 @@ import { FinanceRecord, getFinanceRecords } from '../services/financeService';
 import { getInvoices, InvoiceRecord } from '../services/invoiceService';
 import { getNotifications, NotificationRecord } from '../services/notificationService';
 import { getStockItems, StockRecord } from '../services/stockService';
+import { getRecentLogs, AuditLog } from '../services/logService';
 import {
   type BusinessInsights,
   type InsightSeverity,
   emptyBusinessInsights,
   getBusinessInsights,
 } from '../services/insightService';
+import { getLiveExchangeRates, ExchangeRates } from '../services/currencyService';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell
+} from 'recharts';
 
 const heroLogo = '/images/brand/bey360-command-logo-hero.png';
 
@@ -178,24 +192,7 @@ function isIncomeInvoice(invoice: InvoiceRecord) {
   return invoice.invoiceType !== 'Alış' && invoice.invoiceType !== 'İade';
 }
 
-function buildLineChart(values: number[], width = 680, height = 260, padding = 28): ChartData {
-  const safeValues = values.length ? values : [0];
-  const min = Math.min(...safeValues, 0);
-  const max = Math.max(...safeValues, 1);
-  const range = max - min || 1;
-  const step = safeValues.length > 1 ? (width - padding * 2) / (safeValues.length - 1) : 0;
-  const points = safeValues.map((value, index) => ({
-    value,
-    x: padding + index * step,
-    y: height - padding - ((value - min) / range) * (height - padding * 2),
-  }));
-  const path = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
-  const first = points[0];
-  const last = points[points.length - 1];
-  const areaPath = `${path} L ${last.x} ${height - padding} L ${first.x} ${height - padding} Z`;
 
-  return { path, areaPath, points };
-}
 
 function getScoreVisual(score: number) {
   if (score >= 85) {
@@ -240,6 +237,9 @@ export default function Dashboard({ user }: DashboardProps) {
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [notifications, setNotifications] = useState<NotificationRecord[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [rates, setRates] = useState<ExchangeRates | null>(null);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [note, setNote] = useState(() => localStorage.getItem('bey360_quick_note') || '');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -284,6 +284,13 @@ export default function Dashboard({ user }: DashboardProps) {
       setCustomers(nextCustomers);
       setNotifications(nextNotifications);
       setMessages(nextMessages);
+      
+      const [liveRates, recentLogs] = await Promise.all([
+        getLiveExchangeRates(),
+        getRecentLogs(user.uid, 6)
+      ]);
+      setRates(liveRates);
+      setLogs(recentLogs);
     } catch (loadError) {
       console.error(loadError);
       setError('Dashboard verileri alınamadı. Firebase izinlerini ve bağlantıyı kontrol edin.');
@@ -296,16 +303,15 @@ export default function Dashboard({ user }: DashboardProps) {
     loadDashboard();
   }, [user]);
 
+  useEffect(() => {
+    localStorage.setItem('bey360_quick_note', note);
+  }, [note]);
+
   const todayKey = getDateKey();
   const currentBalance = useMemo(
     () => parseMetricValue(stats.cashBalance) + parseMetricValue(stats.bankBalance),
     [stats.bankBalance, stats.cashBalance]
   );
-  const forecastValues = useMemo(
-    () => [currentBalance, ...insights.forecast.map((item) => item.projectedBalance)],
-    [currentBalance, insights.forecast]
-  );
-  const cashRouteChart = useMemo(() => buildLineChart(forecastValues), [forecastValues]);
   const scoreVisual = getScoreVisual(insights.healthScore);
   const gaugeRadius = 66;
   const gaugeCircumference = 2 * Math.PI * gaugeRadius;
@@ -405,12 +411,12 @@ export default function Dashboard({ user }: DashboardProps) {
 
   const telemetryBars = useMemo(
     () => [
-      { label: 'Tahsilat', value: parseMetricValue(stats.dailyCollection), tone: 'bg-cyan-300', route: '/kasa-banka' },
-      { label: 'Gider', value: parseMetricValue(stats.dailyExpense), tone: 'bg-rose-300', route: '/gelir-gider' },
-      { label: 'Banka', value: parseMetricValue(stats.bankBalance), tone: 'bg-emerald-300', route: '/kasa-banka' },
-      { label: 'Alacak', value: parseMetricValue(stats.pendingReceivables), tone: 'bg-amber-200', route: '/faturalar' },
-      { label: 'Vade', value: parseMetricValue(stats.overdueDebts), tone: 'bg-fuchsia-300', route: '/faturalar' },
-      { label: 'K/Z', value: Math.abs(parseMetricValue(stats.monthlyProfitLoss)), tone: 'bg-lime-300', route: '/raporlar' },
+      { label: 'Tahsilat', value: parseMetricValue(stats.dailyCollection), tone: 'bg-cyan-400', route: '/kasa-banka' },
+      { label: 'Gider', value: parseMetricValue(stats.dailyExpense), tone: 'bg-rose-400', route: '/gelir-gider' },
+      { label: 'Banka', value: parseMetricValue(stats.bankBalance), tone: 'bg-emerald-400', route: '/kasa-banka' },
+      { label: 'Alacak', value: parseMetricValue(stats.pendingReceivables), tone: 'bg-amber-400', route: '/faturalar' },
+      { label: 'Vade', value: parseMetricValue(stats.overdueDebts), tone: 'bg-fuchsia-400', route: '/faturalar' },
+      { label: 'K/Z', value: Math.abs(parseMetricValue(stats.monthlyProfitLoss)), tone: 'bg-lime-400', route: '/raporlar' },
     ],
     [stats]
   );
@@ -702,6 +708,40 @@ export default function Dashboard({ user }: DashboardProps) {
                 </div>
               ))}
             </div>
+
+            {/* Live Currency Widget */}
+            <div className="mt-8 pt-6 border-t border-white/10">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Canlı Kurlar</span>
+                <span className="text-[9px] font-bold text-cyan-400 animate-pulse">{rates?.lastUpdate || 'Yükleniyor...'}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: 'USD', value: rates?.USD, color: 'text-emerald-400' },
+                  { label: 'EUR', value: rates?.EUR, color: 'text-blue-400' },
+                  { label: 'GBP', value: rates?.GBP, color: 'text-fuchsia-400' }
+                ].map((cur) => (
+                  <div key={cur.label} className="bg-white/5 border border-white/5 rounded-lg p-2 text-center">
+                    <p className="text-[9px] font-black text-slate-500 mb-1">{cur.label}</p>
+                    <p className={`text-xs font-black ${cur.color}`}>₺{cur.value?.toFixed(2) || '--.--'}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Note Widget */}
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Hızlı Notlar</span>
+                <Zap size={12} className="text-amber-400" />
+              </div>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Örn: Ahmet Bey'i saat 14:00'te ara..."
+                className="w-full h-24 bg-[#050b14] border border-white/10 rounded-lg p-3 text-xs font-semibold text-slate-300 focus:border-cyan-400/50 focus:ring-0 transition-all resize-none placeholder:text-slate-600"
+              />
+            </div>
           </div>
         </section>
 
@@ -757,29 +797,41 @@ export default function Dashboard({ user }: DashboardProps) {
             </div>
           </div>
 
-          <div className="rounded-lg border border-cyan-300/15 bg-slate-950/70 p-5">
+          <div className="rounded-lg border border-cyan-300/15 bg-slate-950/70 p-5 overflow-hidden relative">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">Akış</p>
-                <h3 className="mt-2 text-xl font-black text-white">Son Hareketler</h3>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">Canlı Telemetri</p>
+                <h3 className="mt-2 text-xl font-black text-white">Sistem Nabzı</h3>
               </div>
-              <Activity className="text-cyan-200" size={24} />
+              <Activity className="text-cyan-200 animate-pulse" size={24} />
             </div>
-            {recentActivities.length === 0 ? (
-              <div className="empty-state">Henüz hareket yok.</div>
-            ) : (
-              <div className="space-y-3">
-                {recentActivities.map((item) => (
-                  <Link key={item.id} to={item.route} className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-3 transition hover:border-cyan-300/30 hover:bg-cyan-300/10">
-                    <div className="min-w-0">
-                      <strong className="block truncate text-sm font-black text-white">{item.title}</strong>
-                      <span className="block truncate text-xs font-semibold text-slate-400">{item.detail} / {formatDate(item.date)}</span>
+            <div className="space-y-4">
+              {telemetryBars.map((bar) => {
+                const percentage = Math.min(100, (bar.value / telemetryMax) * 100);
+                return (
+                  <Link key={bar.label} to={bar.route} className="block group">
+                    <div className="flex justify-between items-end mb-1">
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-cyan-400 transition-colors">{bar.label}</span>
+                      <span className="text-[10px] font-black text-white">{formatCurrency(bar.value)}</span>
                     </div>
-                    <span className="shrink-0 text-sm font-black text-cyan-100">{item.value}</span>
+                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                      <div 
+                        className={`h-full rounded-full ${bar.tone} transition-all duration-1000 ease-out relative`}
+                        style={{ width: `${percentage || 2}%` }}
+                      >
+                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                      </div>
+                    </div>
                   </Link>
-                ))}
+                );
+              })}
+            </div>
+            <div className="mt-6 pt-4 border-t border-white/5">
+              <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                SİSTEM ÇEVRİMİÇİ - GERÇEK ZAMANLI VERİ AKIŞI
               </div>
-            )}
+            </div>
           </div>
         </section>
 
@@ -795,33 +847,51 @@ export default function Dashboard({ user }: DashboardProps) {
               </div>
             </div>
 
-            <div className="mt-6 h-[320px] overflow-hidden rounded-lg border border-white/10 bg-[#050b14] p-4">
-              <svg viewBox="0 0 680 260" className="h-full w-full" role="img" aria-label="Nakit akışı tahmin grafiği">
-                <defs>
-                  <linearGradient id="cashLine" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#67e8f9" />
-                    <stop offset="48%" stopColor="#a7f3d0" />
-                    <stop offset="100%" stopColor="#fcd34d" />
-                  </linearGradient>
-                  <linearGradient id="cashArea" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#67e8f9" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#67e8f9" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                {[48, 92, 136, 180, 224].map((y) => (
-                  <line key={y} x1="28" x2="652" y1={y} y2={y} stroke="rgba(148,163,184,0.15)" strokeDasharray="5 8" />
-                ))}
-                <path d={cashRouteChart.areaPath} fill="url(#cashArea)" />
-                <path d={cashRouteChart.path} fill="none" stroke="url(#cashLine)" strokeLinecap="round" strokeWidth="5" />
-                {cashRouteChart.points.map((point, index) => (
-                  <g key={`${point.x}-${index}`}>
-                    <circle cx={point.x} cy={point.y} r="7" fill="#07111f" stroke="#67e8f9" strokeWidth="3" />
-                    <text x={point.x} y={238} textAnchor="middle" fill="#94a3b8" fontSize="15" fontWeight="800">
-                      {index === 0 ? 'Bugün' : `${insights.forecast[index - 1]?.horizonDays ?? 0}G`}
-                    </text>
-                  </g>
-                ))}
-              </svg>
+            <div className="mt-6 h-[320px] overflow-hidden rounded-lg border border-white/10 bg-[#050b14] p-4 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={insights.forecast.map((f, idx) => ({
+                    name: idx === 0 ? 'Bugün' : `Gün ${idx * 30}`,
+                    value: f.projectedBalance
+                  }))}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#22d3ee" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#475569" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false} 
+                  />
+                  <YAxis 
+                    stroke="#475569" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tickFormatter={(value) => `₺${(value/1000).toFixed(0)}k`}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(103,232,249,0.2)', borderRadius: '12px' }}
+                    itemStyle={{ color: '#22d3ee', fontWeight: 'bold' }}
+                    formatter={(value: any) => [formatCurrency(Number(value)), 'Tahmini Bakiye']}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="#22d3ee" 
+                    fillOpacity={1} 
+                    fill="url(#colorValue)" 
+                    strokeWidth={3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -876,18 +946,49 @@ export default function Dashboard({ user }: DashboardProps) {
             <div className="rounded-lg border border-cyan-300/15 bg-slate-950/70 p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Telemetri</p>
-                  <h3 className="mt-2 text-xl font-black text-white">Operasyon Barları</h3>
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">Mali Denge</p>
+                  <h3 className="mt-2 text-xl font-black text-white">Gelir vs Gider</h3>
                 </div>
                 <BarChart3 className="text-cyan-200" size={26} />
               </div>
-              <div className="mt-6 flex h-64 items-end gap-3 rounded-lg border border-white/10 bg-[#050b14] p-4">
-                {telemetryBars.map((item) => (
-                  <Link key={item.label} to={item.route} className="flex h-full min-w-0 flex-1 flex-col justify-end">
-                    <div className={`min-h-2 rounded-t-md ${item.tone} shadow-[0_0_18px_rgba(103,232,249,0.14)]`} style={{ height: `${Math.max(8, (item.value / telemetryMax) * 100)}%` }} />
-                    <p className="mt-3 truncate text-center text-[10px] font-black uppercase text-slate-400">{item.label}</p>
-                  </Link>
-                ))}
+              
+              <div className="mt-6 h-[220px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { name: 'Gelir', value: parseMetricValue(stats.dailyCollection), color: '#34d399' },
+                      { name: 'Gider', value: parseMetricValue(stats.dailyExpense), color: '#fb7185' }
+                    ]}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis dataKey="name" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                    <Tooltip 
+                      cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                      contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(103,232,249,0.2)', borderRadius: '12px' }}
+                      itemStyle={{ fontWeight: 'bold' }}
+                    formatter={(value: any) => [formatCurrency(Number(value)), 'Tutar']}
+                    />
+                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                      <Cell fill="#34d399" />
+                      <Cell fill="#fb7185" />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              
+              <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/5">
+                <div className="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">
+                  <span>Net Fark</span>
+                  <span className={parseMetricValue(stats.dailyCollection) - parseMetricValue(stats.dailyExpense) >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                    {formatCurrency(parseMetricValue(stats.dailyCollection) - parseMetricValue(stats.dailyExpense))}
+                  </span>
+                </div>
+                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full ${parseMetricValue(stats.dailyCollection) - parseMetricValue(stats.dailyExpense) >= 0 ? 'bg-emerald-400' : 'bg-rose-400'}`}
+                    style={{ width: '100%' }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -935,7 +1036,7 @@ export default function Dashboard({ user }: DashboardProps) {
           ))}
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-3">
+        <section className="grid gap-5 xl:grid-cols-4">
           <div className="rounded-lg border border-cyan-300/15 bg-slate-950/70 p-5">
             <div className="mb-5 flex items-center justify-between">
               <div>
@@ -1012,6 +1113,31 @@ export default function Dashboard({ user }: DashboardProps) {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="rounded-lg border border-cyan-300/15 bg-slate-950/70 p-5">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">Terminal</p>
+                <h3 className="mt-2 text-xl font-black text-white">Son İşlemler</h3>
+              </div>
+              <Activity className="text-cyan-200" size={24} />
+            </div>
+            <div className="space-y-2 font-mono">
+              {logs.length === 0 ? (
+                <div className="text-[10px] text-slate-600 italic px-2 py-8 text-center border border-dashed border-white/5 rounded-xl">Kayıt bekleniyor...</div>
+              ) : (
+                logs.map((log) => (
+                  <div key={log.id} className="text-[10px] p-2 rounded-lg bg-white/[0.02] border border-white/5 group hover:border-cyan-400/30 transition-all">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-cyan-400 font-black">[{log.module}]</span>
+                      <span className="text-slate-600">{log.createdAt?.seconds ? new Date(log.createdAt.seconds * 1000).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                    </div>
+                    <div className="text-slate-300 group-hover:text-white truncate">{log.action}: {log.details}</div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </section>
       </div>

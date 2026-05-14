@@ -1,5 +1,6 @@
 import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { logAction } from './logService';
 
 export interface StockRecord {
   id?: string;
@@ -24,6 +25,7 @@ export async function addStockItem(uid: string, stock: Omit<StockRecord, 'id' | 
     ...stock,
     createdAt: serverTimestamp(),
   });
+  await logAction(uid, 'Stok Kartı Oluşturuldu', 'Stoklar', stock.name);
   return { id: docRef.id, ...stock };
 }
 
@@ -48,9 +50,11 @@ export async function getStockItemCount(uid: string) {
 export async function updateStockItem(uid: string, itemId: string, updates: Partial<StockRecord>) {
   const docRef = doc(getStockCollection(uid), itemId);
   await updateDoc(docRef, updates);
+  await logAction(uid, 'Stok Kartı Güncellendi', 'Stoklar', updates.name || `ID: ${itemId}`);
 }
 
 export async function deleteStockItem(uid: string, itemId: string) {
   const docRef = doc(getStockCollection(uid), itemId);
   await deleteDoc(docRef);
+  await logAction(uid, 'Stok Kartı Silindi', 'Stoklar', `ID: ${itemId}`);
 }

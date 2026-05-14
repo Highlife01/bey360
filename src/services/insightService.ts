@@ -2,6 +2,7 @@ import { getCashBankRecords } from './cashBankService';
 import { getFinanceRecords } from './financeService';
 import { type InvoiceRecord, getInvoices } from './invoiceService';
 import { getStockItems } from './stockService';
+import { getStockMovements } from './stockMovementService';
 
 export type InsightSeverity = 'success' | 'info' | 'warning' | 'critical';
 export type ForecastConfidence = 'Yüksek' | 'Orta' | 'Başlangıç';
@@ -120,11 +121,12 @@ function getConfidence(recordCount: number): ForecastConfidence {
 export async function getBusinessInsights(uid: string): Promise<BusinessInsights> {
   const todayKey = getDateKey();
   const currentMonth = todayKey.slice(0, 7);
-  const [invoices, cashBank, finance, stock] = await Promise.all([
+  const [invoices, cashBank, finance, stock, movements] = await Promise.all([
     getInvoices(uid),
     getCashBankRecords(uid),
     getFinanceRecords(uid),
     getStockItems(uid),
+    getStockMovements(uid)
   ]);
 
   const recordCount = invoices.length + cashBank.length + finance.length + stock.length;
@@ -293,6 +295,40 @@ export async function getBusinessInsights(uid: string): Promise<BusinessInsights
       severity: 'info',
       route: '/stok',
       action: 'Stok planla',
+    });
+
+    // AI Stock Forecasting logic
+    stock.forEach(item => {
+      const itemMovements = movements.filter(m => m.stockCode === item.code && m.movementType === 'Çıkış');
+      if (itemMovements.length >= 3) {
+        const totalOut = sum(itemMovements.map(m => m.quantity));
+        const firstMovement = itemMovements[itemMovements.length - 1];
+        const daysDiff = daysFromToday(firstMovement.date, todayKey);
+        const velocity = totalOut / Math.abs(daysDiff || 1);
+        
+        if (velocity > 0) {
+          const daysRemaining = Math.floor(item.quantity / velocity);
+          if (daysRemaining <= 7 && daysRemaining >= 0) {
+            risks.push({
+              id: `stock-out-${item.code}`,
+              title: `Stok Tükenme Alarmı: ${item.name}`,
+              description: `Satış hızına göre bu ürün ${daysRemaining} gün içinde tükenecek.`,
+              severity: 'critical',
+              route: '/stok',
+              action: 'Sipariş ver'
+            });
+          } else if (daysRemaining <= 15 && daysRemaining > 7) {
+            recommendations.push({
+              id: `stock-predict-${item.code}`,
+              title: `Stok Öngörüsü: ${item.name}`,
+              description: `Mevcut tempoda stok 15 gün içinde kritik seviyeye düşecek.`,
+              severity: 'warning',
+              route: '/stok',
+              action: 'Planlama yap'
+            });
+          }
+        }
+      }
     });
   }
 

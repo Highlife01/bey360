@@ -3,19 +3,17 @@ import { db } from '../firebase';
 
 export interface AuditLog {
   id?: string;
-  userId: string;
-  userEmail: string;
   action: string;
   module: string;
   details: string;
   createdAt: any;
 }
 
-export async function logAction(userId: string, userEmail: string, action: string, module: string, details: string) {
+const getLogsCollection = (uid: string) => collection(db, 'users', uid, 'audit_logs');
+
+export async function logAction(uid: string, action: string, module: string, details: string) {
   try {
-    await addDoc(collection(db, 'audit_logs'), {
-      userId,
-      userEmail,
+    await addDoc(getLogsCollection(uid), {
       action,
       module,
       details,
@@ -26,15 +24,20 @@ export async function logAction(userId: string, userEmail: string, action: strin
   }
 }
 
-export async function getRecentLogs(userId: string): Promise<AuditLog[]> {
-  const q = query(
-    collection(db, 'audit_logs'),
-    orderBy('createdAt', 'desc'),
-    limit(50)
-  );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as AuditLog));
+export async function getRecentLogs(uid: string, count = 10): Promise<AuditLog[]> {
+  try {
+    const q = query(
+      getLogsCollection(uid),
+      orderBy('createdAt', 'desc'),
+      limit(count)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as AuditLog));
+  } catch (err) {
+    console.error('Failed to fetch logs:', err);
+    return [];
+  }
 }

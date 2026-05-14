@@ -56,16 +56,25 @@ export async function generateInvoicePDF(invoice: any, profile: any) {
   ], 20, 91);
 
   // Items Table
-  const tableData = [
-    [
-      invoice.note || 'Hizmet Bedeli',
-      '1 Adet',
-      formatCurrency(invoice.amount),
-      `%${invoice.vatRate}`,
-      formatCurrency(invoice.vatAmount),
-      formatCurrency(invoice.grandTotal)
-    ]
-  ];
+  const tableData = (invoice.items && invoice.items.length > 0) 
+    ? invoice.items.map((item: any) => [
+        item.description || 'Urun/Hizmet',
+        `${item.quantity} Adet`,
+        formatCurrency(item.unitPrice),
+        `%${item.vatRate}`,
+        formatCurrency(item.quantity * item.unitPrice * item.vatRate / 100),
+        formatCurrency(item.total)
+      ])
+    : [
+        [
+          invoice.note || 'Hizmet Bedeli',
+          '1 Adet',
+          formatCurrency(invoice.amount),
+          `%${invoice.vatRate}`,
+          formatCurrency(invoice.vatAmount),
+          formatCurrency(invoice.grandTotal)
+        ]
+      ];
 
   doc.autoTable({
     startY: 105,

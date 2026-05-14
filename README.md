@@ -119,22 +119,26 @@ Instagram: https://www.instagram.com/beyogluteknoloji/
 Web: https://www.beyogluteknoloji.com
 ```
 
-### Komuta Merkezi Dashboard
-
-`src/pages/Dashboard.tsx` tamamen yenilendi.
-
-Eklenenler:
-
-- Koyu/neon “uzay üssü” komuta merkezi tasarımı
-- İşletme sağlık skoru
-- 30 / 60 / 90 günlük nakit akışı tahmini
-- Risk radar ekranı
-- Operasyon telemetri barları
-- Canlı modül çalışma durumu
-- Sıfır veri durumunda yönlendirici `Hazır` etiketleri
-- Bekleyen tahsilat, düşük stok ve son hareket panelleri
-- Riskler, öneriler ve anomaliler panelleri
 - Hızlı aksiyonlar
+
+### Modern Komuta İşletim Sistemi (Faz 1 & 2) - Mayıs 2026
+
+Bey360, basit bir muhasebe yazılımından gerçek bir "Komuta İşletim Sistemi" (Command OS) vizyonuna taşındı:
+
+*   **OmniSearch (Küresel Arama):** `Ctrl + K` kısayolu ile tüm sistemde (Cari, Fatura, Stok, Modül) anlık arama ve hızlı navigasyon.
+*   **WhatsApp Entegrasyonu:** Tek tıkla müşteriye bakiye hatırlatması gönderme (`utils/whatsapp.ts`).
+*   **İnteraktif Analitik (Recharts):** Nakit akışı tahmini ve mali denge için etkileşimli, detaylı grafikler.
+*   **AI Stok Tahminleme:** Satış hızını analiz ederek ürünlerin kaç gün içinde tükeneceğini öngören akıllı algoritma.
+*   **Canlı Döviz Takibi:** Dashboard üzerinde anlık USD/EUR/GBP kurları (API entegrasyonlu).
+*   **Hızlı Notlar (Notepad):** Dashboard üzerinde kalıcı, tarayıcı bazlı hızlı not alma alanı.
+*   **İşlem Terminali (Audit Logs):** Tüm kullanıcı hareketlerini (oluşturma, silme, güncelleme) izleyen ve dashboard üzerinde "Terminal" modunda gösteren denetim sistemi.
+*   **Toplu İşlem Merkezi (Bulk Actions):** Faturalar ve diğer listeler üzerinde toplu silme, toplu durum güncelleme ve seçim yönetimi.
+*   **Gelişmiş Fatura Sistemi:** Kalem bazlı giriş (itemized), otomatik hesaplama ve zenginleştirilmiş PDF çıktıları.
+*   **Cari & Stok 360 Panelleri:** Yan paneller aracılığıyla derinlemesine hareket geçmişi ve kârlılık analizi.
+*   **Modern Tasarım Dili:** Neon-estetik, backdrop-blur, framer-motion animasyonları ve premium "Dark Mode" deneyimi.
+*   **Global İletişim Servisi:** WhatsApp Web API entegrasyonu ile otomatik mesaj taslakları oluşturma.
+*   **Akıllı PDF Motoru:** `jspdf-autotable` ile kalem bazlı, profesyonel fatura dökümleri.
+*   **Performans & Stabilite:** Production build hataları giderildi, `tsc` uyumluluğu sağlandı, `manualChunks` ile bundle optimizasyonu yapıldı.
 
 ### Akıllı İşletme İçgörüleri
 

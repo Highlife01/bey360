@@ -23,10 +23,14 @@ import {
   Briefcase,
   Signal,
   Plus,
+  Command,
+  Zap,
+  ArrowRight
 } from 'lucide-react';
 import { isSuperAdmin } from '../config/admins';
 import SEO from './SEO';
 import { getUserProfile } from '../services/userService';
+import { performGlobalSearch, SearchResult } from '../services/globalSearchService';
 
 interface AppLayoutProps {
   user: User;
@@ -54,6 +58,9 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
   const [theme, setTheme] = useState(() => localStorage.getItem('bey360_theme') || 'dark');
   const location = useLocation();
   const navigate = useNavigate();
+  const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -67,6 +74,31 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
     };
     loadProfile();
   }, [user]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+      if (e.key === 'Escape') {
+        setCommandPaletteOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const commands = [
+    { label: 'Panel', path: '/panel', icon: LayoutDashboard, shortcut: 'P' },
+    { label: 'Yeni Fatura Kes', path: '/faturalar', icon: FileText, shortcut: 'F' },
+    { label: 'Cari Kart Ekle', path: '/cariler', icon: Users, shortcut: 'C' },
+    { label: 'Stok Yönetimi', path: '/stok', icon: Package, shortcut: 'S' },
+    { label: 'Kasa/Banka', path: '/kasa-banka', icon: Wallet, shortcut: 'K' },
+    { label: 'Gelir/Gider', path: '/gelir-gider', icon: TrendingUp, shortcut: 'G' },
+    { label: 'Raporlar', path: '/raporlar', icon: Briefcase, shortcut: 'R' },
+    { label: 'Ayarlar', path: '/ayarlar', icon: SettingsIcon, shortcut: 'A' },
+  ];
 
   const superAdmin = isSuperAdmin(user);
   const visibleNav = superAdmin
@@ -86,6 +118,22 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
     navigate(target);
     setSearchTerm('');
   };
+
+  useEffect(() => {
+    const triggerSearch = async () => {
+      if (searchTerm.length < 2) {
+        setSearchResults([]);
+        return;
+      }
+      setIsSearching(true);
+      const results = await performGlobalSearch(user.uid, searchTerm);
+      setSearchResults(results);
+      setIsSearching(false);
+    };
+
+    const timer = setTimeout(triggerSearch, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm, user.uid]);
 
   return (
     <div className="min-h-screen font-sans">
@@ -205,6 +253,10 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
                     className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] py-3 pl-12 pr-5 text-sm font-semibold text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]"
                     placeholder="Cari, fatura veya işlem ara..."
                   />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] font-black text-slate-500">
+                    <span className="text-[8px]">CTRL</span>
+                    <span>K</span>
+                  </div>
                 </form>
                 <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-3">
                   <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
@@ -249,6 +301,100 @@ export default function AppLayout({ user, onSignOut, children }: AppLayoutProps)
           <div className="mx-auto max-w-[1680px] p-4 md:p-6 lg:p-8">{children}</div>
         </main>
       </div>
+
+      {/* Command Palette Modal */}
+      {isCommandPaletteOpen && (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 bg-slate-950/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            className="w-full max-w-2xl bg-[#0b1625] border border-cyan-300/20 rounded-2xl shadow-[0_0_50px_rgba(34,211,238,0.15)] overflow-hidden animate-in slide-in-from-top-4 duration-300"
+          >
+            <div className="p-4 border-b border-white/5 flex items-center gap-3">
+              <Command className="text-cyan-400" size={20} />
+              <input 
+                autoFocus
+                type="text" 
+                placeholder="Komut yazın veya seçin..." 
+                className="flex-1 bg-transparent border-none outline-none text-white font-bold placeholder:text-slate-600"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">[ESC] KAPAT</span>
+            </div>
+            
+            <div className="p-2 max-h-[450px] overflow-y-auto">
+              {/* Küresel Arama Sonuçları */}
+              {searchResults.length > 0 && (
+                <div className="mb-4">
+                  <p className="px-4 py-2 text-[10px] font-black text-cyan-400 uppercase tracking-widest">Arama Sonuçları</p>
+                  {searchResults.map((res) => (
+                    <button
+                      key={`${res.type}-${res.id}`}
+                      onClick={() => {
+                        navigate(res.path);
+                        setCommandPaletteOpen(false);
+                        setSearchTerm('');
+                      }}
+                      className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 group transition-all"
+                    >
+                      <div className="flex items-center gap-4 text-left">
+                        <div className={`p-2 rounded-lg ${
+                          res.type === 'Cari' ? 'bg-amber-400/10 text-amber-400' :
+                          res.type === 'Fatura' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-cyan-400/10 text-cyan-400'
+                        }`}>
+                          {res.type === 'Cari' ? <Users size={16} /> : res.type === 'Fatura' ? <FileText size={16} /> : <Package size={16} />}
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-200 group-hover:text-white text-sm">{res.title}</span>
+                          <span className="block text-[10px] font-bold text-slate-500">{res.subtitle}</span>
+                        </div>
+                      </div>
+                      <span className="badge text-[8px] opacity-50 group-hover:opacity-100">{res.type}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <p className="px-4 py-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">Hızlı Navigasyon</p>
+              {commands.filter(cmd => cmd.label.toLowerCase().includes(searchTerm.toLowerCase())).map((cmd) => (
+                <button
+                  key={cmd.path}
+                  onClick={() => {
+                    navigate(cmd.path);
+                    setCommandPaletteOpen(false);
+                    setSearchTerm('');
+                  }}
+                  className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-cyan-300/10 group transition-all"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 rounded-lg bg-white/5 group-hover:bg-cyan-300/20 text-slate-400 group-hover:text-cyan-300 transition-colors">
+                      <cmd.icon size={18} />
+                    </div>
+                    <span className="font-bold text-slate-300 group-hover:text-white">{cmd.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Zap size={14} className="text-slate-700 group-hover:text-amber-400" />
+                    <span className="text-[10px] font-black text-slate-600 group-hover:text-cyan-400">GİT</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="p-4 bg-slate-900/50 border-t border-white/5 flex items-center justify-between">
+              <div className="flex gap-4">
+                <div className="flex items-center gap-1.5">
+                  <span className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[9px] font-black text-slate-400">↑↓</span>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase">Seç</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[9px] font-black text-slate-400">ENTER</span>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase">Onayla</span>
+                </div>
+              </div>
+              <p className="text-[10px] font-black text-cyan-400/50">BEY360 COMMAND CENTER</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

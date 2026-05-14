@@ -29,6 +29,19 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/AppLayout';
 import { seoPages } from './data/seoPages';
 
+const explicitPublicPaths = new Set([
+  '/',
+  '/blog',
+  '/ozellikler',
+  '/fiyatlar',
+  '/hakkimizda',
+  '/iletisim',
+  '/login',
+  '/signup',
+]);
+
+const seoLandingPages = seoPages.filter((page) => !explicitPublicPaths.has(page.path));
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,7 +82,7 @@ function App() {
         path="/signup"
         element={user ? <Navigate to="/panel" replace /> : <Signup />}
       />
-      {seoPages.map((page) => (
+      {seoLandingPages.map((page) => (
         <Route key={page.path} path={page.path} element={<SeoLanding page={page} />} />
       ))}
       <Route path="/blog" element={<Blog />} />

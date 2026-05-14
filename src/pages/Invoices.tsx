@@ -14,9 +14,11 @@ import {
   XCircle,
   FileDown,
   Camera,
-  RefreshCw
+  RefreshCw,
+  PlusCircle,
+  MinusCircle
 } from 'lucide-react';
-import { addInvoice, deleteInvoice, getInvoices, InvoiceRecord, updateInvoice, performRealOCR } from '../services/invoiceService';
+import { addInvoice, deleteInvoice, getInvoices, InvoiceRecord, updateInvoice, performRealOCR, InvoiceItem } from '../services/invoiceService';
 import { useRef } from 'react';
 import { getCustomers, CustomerRecord } from '../services/customerService';
 import { exportToExcel } from '../services/excelService';
@@ -55,8 +57,10 @@ export default function Invoices({ user }: InvoicesProps) {
     dueDate: '',
     status: 'Beklemede',
     note: '',
+    items: [],
   });
   const [scanning, setScanning] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -106,15 +110,62 @@ export default function Invoices({ user }: InvoicesProps) {
     loadData();
   }, [user]);
 
-  // Automatic calculation
+  // Automatic calculation based on items or manual amount
   useEffect(() => {
-    const vat = (form.amount * form.vatRate) / 100;
+    if (form.items && form.items.length > 0) {
+      const subtotal = form.items.reduce((s, item) => s + (item.quantity * item.unitPrice), 0);
+      const totalVat = form.items.reduce((s, item) => s + (item.quantity * item.unitPrice * item.vatRate / 100), 0);
+      setForm(prev => ({
+        ...prev,
+        amount: subtotal,
+        vatAmount: totalVat,
+        grandTotal: subtotal + totalVat
+      }));
+    } else {
+      const vat = (form.amount * form.vatRate) / 100;
+      setForm(prev => ({
+        ...prev,
+        vatAmount: vat,
+        grandTotal: prev.amount + vat
+      }));
+    }
+  }, [form.amount, form.vatRate, form.items]);
+
+  const addItem = () => {
+    const newItem: InvoiceItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      description: '',
+      quantity: 1,
+      unitPrice: 0,
+      vatRate: 20,
+      total: 0
+    };
     setForm(prev => ({
       ...prev,
-      vatAmount: vat,
-      grandTotal: prev.amount + vat
+      items: [...(prev.items || []), newItem]
     }));
-  }, [form.amount, form.vatRate]);
+  };
+
+  const removeItem = (id: string) => {
+    setForm(prev => ({
+      ...prev,
+      items: (prev.items || []).filter(item => item.id !== id)
+    }));
+  };
+
+  const updateItem = (id: string, updates: Partial<InvoiceItem>) => {
+    setForm(prev => ({
+      ...prev,
+      items: (prev.items || []).map(item => {
+        if (item.id === id) {
+          const updated = { ...item, ...updates };
+          updated.total = updated.quantity * updated.unitPrice * (1 + updated.vatRate / 100);
+          return updated;
+        }
+        return item;
+      })
+    }));
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -133,6 +184,7 @@ export default function Invoices({ user }: InvoicesProps) {
       dueDate: '',
       status: 'Beklemede',
       note: '',
+      items: [],
     });
     loadData();
   };
@@ -147,6 +199,48 @@ export default function Invoices({ user }: InvoicesProps) {
     if (!user) return;
     await updateInvoice(user.uid, id, { status });
     loadData();
+  };
+
+  const handleBulkDelete = async () => {
+    if (!user || selectedIds.length === 0 || !window.confirm(`${selectedIds.length} faturayı silmek istediğinize emin misiniz?`)) return;
+    setLoading(true);
+    try {
+      await Promise.all(selectedIds.map(id => deleteInvoice(user.uid, id)));
+      setSelectedIds([]);
+      await loadData();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkStatusUpdate = async (status: InvoiceRecord['status']) => {
+    if (!user || selectedIds.length === 0) return;
+    setLoading(true);
+    try {
+      await Promise.all(selectedIds.map(id => updateInvoice(user.uid, id, { status })));
+      setSelectedIds([]);
+      await loadData();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredInvoices.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredInvoices.map(inv => inv.id!).filter(Boolean));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
   };
 
   const filteredInvoices = useMemo(() => {
@@ -230,7 +324,7 @@ export default function Invoices({ user }: InvoicesProps) {
         </article>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[400px_1fr]">
+      <div className="grid gap-6 xl:grid-cols-[550px_1fr]">
         <section className="card">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -299,21 +393,85 @@ export default function Invoices({ user }: InvoicesProps) {
               </label>
             </div>
 
+            {/* Fatura Kalemleri Section */}
+            <div className="mt-4 p-4 border border-white/10 rounded-lg bg-white/5">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fatura Kalemleri</span>
+                <button 
+                  type="button" 
+                  onClick={addItem}
+                  className="text-[10px] font-black uppercase tracking-widest text-cyan-400 flex items-center gap-1 hover:text-cyan-300"
+                >
+                  <PlusCircle size={14} /> Kalem Ekle
+                </button>
+              </div>
+              
+              <div className="space-y-3">
+                {form.items && form.items.length > 0 ? (
+                  form.items.map((item, idx) => (
+                    <div key={item.id} className="grid grid-cols-[1fr_60px_100px_30px] gap-2 items-end">
+                      <label className="!mt-0">
+                        Açıklama
+                        <input 
+                          value={item.description} 
+                          onChange={(e) => updateItem(item.id, { description: e.target.value })}
+                          placeholder="Ürün veya hizmet..."
+                          className="!py-2 !text-xs"
+                        />
+                      </label>
+                      <label className="!mt-0">
+                        Adet
+                        <input 
+                          type="number"
+                          value={item.quantity} 
+                          onChange={(e) => updateItem(item.id, { quantity: Number(e.target.value) })}
+                          className="!py-2 !text-xs"
+                        />
+                      </label>
+                      <label className="!mt-0">
+                        Birim Fiyat
+                        <input 
+                          type="number"
+                          step="0.01"
+                          value={item.unitPrice} 
+                          onChange={(e) => updateItem(item.id, { unitPrice: Number(e.target.value) })}
+                          className="!py-2 !text-xs"
+                        />
+                      </label>
+                      <button 
+                        type="button" 
+                        onClick={() => removeItem(item.id)}
+                        className="mb-2 p-2 text-rose-500 hover:text-rose-400 transition-colors"
+                      >
+                        <MinusCircle size={16} />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-[10px] text-slate-500 font-bold text-center py-2">Henüz kalem eklenmedi (Otomatik kalem dışı tutar kullanılır).</p>
+                )}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
-              <label>
-                Ara Toplam
-                <input type="number" step="0.01" value={form.amount} onChange={(e) => setForm({...form, amount: Number(e.target.value)})} required />
-              </label>
-              <label>
-                KDV Oranı
-                <select value={form.vatRate} onChange={(e) => setForm({...form, vatRate: Number(e.target.value)})}>
-                  <option value={0}>%0</option>
-                  <option value={1}>%1</option>
-                  <option value={10}>%10</option>
-                  <option value={20}>%20</option>
-                </select>
-              </label>
-              <label>
+              {(!form.items || form.items.length === 0) && (
+                <label>
+                  Ara Toplam
+                  <input type="number" step="0.01" value={form.amount} onChange={(e) => setForm({...form, amount: Number(e.target.value)})} required />
+                </label>
+              )}
+              {(!form.items || form.items.length === 0) && (
+                <label>
+                  KDV Oranı
+                  <select value={form.vatRate} onChange={(e) => setForm({...form, vatRate: Number(e.target.value)})}>
+                    <option value={0}>%0</option>
+                    <option value={1}>%1</option>
+                    <option value={10}>%10</option>
+                    <option value={20}>%20</option>
+                  </select>
+                </label>
+              )}
+              <label className={form.items && form.items.length > 0 ? "col-span-2" : ""}>
                 Para Birimi
                 <select value={(form as any).currency} onChange={(e) => setForm({...form, currency: e.target.value} as any)}>
                   <option>TRY</option>
@@ -375,6 +533,14 @@ export default function Invoices({ user }: InvoicesProps) {
             <table>
               <thead>
                 <tr>
+                  <th className="w-10">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedIds.length > 0 && selectedIds.length === filteredInvoices.length}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded border-white/10 bg-white/5 text-cyan-500 focus:ring-cyan-500/20"
+                    />
+                  </th>
                   <th>No / Tür</th>
                   <th>Cari</th>
                   <th>Vade</th>
@@ -390,7 +556,16 @@ export default function Invoices({ user }: InvoicesProps) {
                   </tr>
                 ) : (
                   filteredInvoices.map((inv) => (
-                    <tr key={inv.id}>
+                    <tr key={inv.id} className={selectedIds.includes(inv.id!) ? 'bg-cyan-400/5' : ''}>
+                      <td>
+                        <input 
+                          type="checkbox" 
+                          checked={selectedIds.includes(inv.id!)}
+                          onChange={() => toggleSelect(inv.id!)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-4 h-4 rounded border-white/10 bg-white/5 text-cyan-500 focus:ring-cyan-500/20"
+                        />
+                      </td>
                       <td>
                         <div className="font-black text-white">{inv.invoiceNumber}</div>
                         <div className="text-[10px] uppercase text-slate-500 tracking-widest">{inv.invoiceType}</div>
@@ -443,6 +618,47 @@ export default function Invoices({ user }: InvoicesProps) {
           </div>
         </section>
       </div>
+      {/* Floating Bulk Action Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-8 duration-300">
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-cyan-400/20 rounded-2xl p-4 shadow-2xl flex items-center gap-6">
+            <div className="flex items-center gap-3 px-2 border-r border-white/10 mr-2">
+              <div className="w-8 h-8 rounded-lg bg-cyan-400/10 flex items-center justify-center text-cyan-400 font-black text-xs">
+                {selectedIds.length}
+              </div>
+              <span className="text-xs font-black text-white uppercase tracking-widest">Seçili Fatura</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => handleBulkStatusUpdate('Ödendi')}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-400/10 text-emerald-400 text-xs font-black hover:bg-emerald-400/20 transition-all"
+              >
+                <CheckCircle2 size={16} /> Ödendi İşaretle
+              </button>
+              <button 
+                onClick={() => handleBulkStatusUpdate('Beklemede')}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400/10 text-amber-400 text-xs font-black hover:bg-amber-400/20 transition-all"
+              >
+                <Clock size={16} /> Beklemeye Al
+              </button>
+              <button 
+                onClick={handleBulkDelete}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-400/10 text-rose-400 text-xs font-black hover:bg-rose-400/20 transition-all"
+              >
+                <Trash2 size={16} /> Toplu Sil
+              </button>
+            </div>
+            
+            <button 
+              onClick={() => setSelectedIds([])}
+              className="p-2 text-slate-500 hover:text-white transition-colors"
+            >
+              <XCircle size={20} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

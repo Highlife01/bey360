@@ -11,9 +11,12 @@ import {
   Layers,
   ArrowUpRight,
   ArrowDownLeft,
-  FileDown
+  FileDown,
+  Edit3,
+  Target,
+  BarChart4
 } from 'lucide-react';
-import { addFinanceRecord, deleteFinanceRecord, getFinanceRecords, FinanceRecord } from '../services/financeService';
+import { addFinanceRecord, deleteFinanceRecord, getFinanceRecords, FinanceRecord, updateFinanceRecord } from '../services/financeService';
 import { exportToExcel } from '../services/excelService';
 
 interface IncomeExpensesProps {
@@ -40,6 +43,7 @@ export default function IncomeExpenses({ user }: IncomeExpensesProps) {
     date: new Date().toISOString().slice(0, 10),
     note: '',
   });
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const loadData = async () => {
     if (!user) return;
@@ -61,11 +65,18 @@ export default function IncomeExpenses({ user }: IncomeExpensesProps) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!user) return;
-    await addFinanceRecord(user.uid, form);
+    
+    if (editingId) {
+      await updateFinanceRecord(user.uid, editingId, form);
+    } else {
+      await addFinanceRecord(user.uid, form);
+    }
+    
     setForm({ 
       type: 'Gider', category: 'Genel', 
       amount: 0, date: new Date().toISOString().slice(0, 10), note: '' 
     });
+    setEditingId(null);
     setIsFormOpen(false);
     loadData();
   };
@@ -74,6 +85,18 @@ export default function IncomeExpenses({ user }: IncomeExpensesProps) {
     if (!user || !window.confirm('Bu kaydı silmek istediğinize emin misiniz?')) return;
     await deleteFinanceRecord(user.uid, id);
     loadData();
+  };
+
+  const handleEdit = (record: FinanceRecord) => {
+    setForm({
+      type: record.type,
+      category: record.category,
+      amount: record.amount,
+      date: record.date,
+      note: record.note,
+    });
+    setEditingId(record.id!);
+    setIsFormOpen(true);
   };
 
   const filteredRecords = useMemo(() => {
@@ -124,7 +147,13 @@ export default function IncomeExpenses({ user }: IncomeExpensesProps) {
               <FileDown size={18} /> Excel İndir
             </button>
             <button 
-              onClick={() => setIsFormOpen(!isFormOpen)} 
+              onClick={() => {
+                if (isFormOpen) {
+                  setEditingId(null);
+                  setForm({ type: 'Gider', category: 'Genel', amount: 0, date: new Date().toISOString().slice(0, 10), note: '' });
+                }
+                setIsFormOpen(!isFormOpen);
+              }} 
               className="button-primary flex items-center gap-2"
             >
               <Plus size={18} /> {isFormOpen ? 'Vazgeç' : 'Yeni Kayıt'}
@@ -163,7 +192,10 @@ export default function IncomeExpenses({ user }: IncomeExpensesProps) {
         <div className="space-y-6">
           {isFormOpen && (
             <section className="card animate-in fade-in slide-in-from-left-4">
-              <h3 className="mb-6">Kayıt Ekle</h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="mb-0">{editingId ? 'Kaydı Güncelle' : 'Kayıt Ekle'}</h3>
+                {editingId && <span className="badge badge-warning">Düzenleme</span>}
+              </div>
               <form className="dashboard-form" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-2 gap-4">
                   <label>
@@ -206,7 +238,22 @@ export default function IncomeExpenses({ user }: IncomeExpensesProps) {
                   <input value={form.note} onChange={e => setForm({...form, note: e.target.value})} placeholder="İşlem detayı..." required />
                 </label>
 
-                <button type="submit" className="button-primary w-full">Kaydet</button>
+                <button type="submit" className="button-primary w-full">
+                  {editingId ? 'Güncelle' : 'Kaydet'}
+                </button>
+                {editingId && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setEditingId(null);
+                      setIsFormOpen(false);
+                      setForm({ type: 'Gider', category: 'Genel', amount: 0, date: new Date().toISOString().slice(0, 10), note: '' });
+                    }} 
+                    className="button-secondary w-full"
+                  >
+                    Vazgeç
+                  </button>
+                )}
               </form>
             </section>
           )}
@@ -295,9 +342,17 @@ export default function IncomeExpenses({ user }: IncomeExpensesProps) {
                         <div className="text-xs">{formatDate(r.date)}</div>
                       </td>
                       <td className="text-right">
-                        <button onClick={() => handleDelete(r.id!)} className="p-2 text-slate-600 hover:text-rose-400 transition-colors">
-                          <Trash2 size={18} />
-                        </button>
+                        <div className="flex justify-end gap-1">
+                          <button 
+                            onClick={() => handleEdit(r)}
+                            className="p-2 text-slate-600 hover:text-cyan-400 opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <Edit3 size={18} />
+                          </button>
+                          <button onClick={() => handleDelete(r.id!)} className="p-2 text-slate-600 hover:text-rose-400 transition-all">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

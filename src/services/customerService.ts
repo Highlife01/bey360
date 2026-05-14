@@ -1,5 +1,6 @@
 import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { logAction } from './logService';
 
 export interface CustomerRecord {
   id?: string;
@@ -21,6 +22,7 @@ export async function addCustomer(uid: string, customer: Omit<CustomerRecord, 'i
     ...customer,
     createdAt: serverTimestamp(),
   });
+  await logAction(uid, 'Cari Hesap Oluşturuldu', 'Cariler', customer.name);
   return { id: docRef.id, ...customer };
 }
 
@@ -33,9 +35,11 @@ export async function getCustomers(uid: string) {
 export async function updateCustomer(uid: string, customerId: string, updates: Partial<CustomerRecord>) {
   const docRef = doc(getCustomersCollection(uid), customerId);
   await updateDoc(docRef, updates);
+  await logAction(uid, 'Cari Hesap Güncellendi', 'Cariler', updates.name || `ID: ${customerId}`);
 }
 
 export async function deleteCustomer(uid: string, customerId: string) {
   const docRef = doc(getCustomersCollection(uid), customerId);
   await deleteDoc(docRef);
+  await logAction(uid, 'Cari Hesap Silindi', 'Cariler', `ID: ${customerId}`);
 }

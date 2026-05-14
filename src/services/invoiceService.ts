@@ -1,6 +1,16 @@
 import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { createWorker } from 'tesseract.js';
+import { logAction } from './logService';
+
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  vatRate: number;
+  total: number;
+}
 
 export interface InvoiceRecord {
   id?: string;
@@ -15,6 +25,7 @@ export interface InvoiceRecord {
   issueDate: string;
   dueDate: string;
   status: 'Beklemede' | 'Onaylandı' | 'Reddedildi' | 'Ödendi';
+  items?: InvoiceItem[];
   note?: string;
   currency?: string;
   createdAt?: unknown;
@@ -27,6 +38,7 @@ export async function addInvoice(uid: string, invoice: Omit<InvoiceRecord, 'id' 
     ...invoice,
     createdAt: serverTimestamp(),
   });
+  await logAction(uid, 'Fatura Oluşturuldu', 'Faturalar', `${invoice.invoiceNumber} - ${invoice.customerName}`);
   return { id: docRef.id, ...invoice };
 }
 
@@ -39,11 +51,13 @@ export async function getInvoices(uid: string) {
 export async function updateInvoice(uid: string, invoiceId: string, updates: Partial<InvoiceRecord>) {
   const docRef = doc(getInvoicesCollection(uid), invoiceId);
   await updateDoc(docRef, updates);
+  await logAction(uid, 'Fatura Güncellendi', 'Faturalar', `${updates.invoiceNumber || 'ID: ' + invoiceId}`);
 }
 
 export async function deleteInvoice(uid: string, invoiceId: string) {
   const docRef = doc(getInvoicesCollection(uid), invoiceId);
   await deleteDoc(docRef);
+  await logAction(uid, 'Fatura Silindi', 'Faturalar', `ID: ${invoiceId}`);
 }
 
 export async function performRealOCR(file: File) {
